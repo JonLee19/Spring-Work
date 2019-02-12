@@ -57,6 +57,9 @@ public class Fraction {
 	}
 	public String toString() {
 		//converts an improper fraction to mixed number using math rules
+		if (denominator==0) {
+    		return("ERROR: Cannot divide by zero.");
+    	}
 		if (numerator==0) {
 			return ("0");
 		}
@@ -76,7 +79,6 @@ public class Fraction {
 			return (""+wholenumber);
 		//if no remainder, then the numerator divides evenly and there is no fractional component
 		}
-		
 		return (wholenumber+"_"+remainder+"/"+absValue(denominator));
 		//because denominators of fractions are always written as positives
 	}
