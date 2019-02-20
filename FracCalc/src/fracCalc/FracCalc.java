@@ -13,7 +13,7 @@ public class FracCalc {
     	while (done!=true) {
     		String[] splitted = input.split(" ");
     		String answer = splitted[0];
-    		for (int i = 2; i<splitted.length-2; i+=2) {
+    		for (int i = 2; i<splitted.length; i+=2) {
     			answer = produceAnswer(answer+" "+splitted[i-1]+" "+splitted[i]);
     		}
     		System.out.println(answer);
@@ -28,13 +28,14 @@ public class FracCalc {
     
     public static String produceAnswer(String input) { 
     	String[] splitted = input.split(" ");
+    	//split on a space to separate the operands and operator
     	Fraction op1 = new Fraction(splitted[0]);
     	String operator = splitted[1];
     	Fraction op2 = new Fraction(splitted[2]);
-    	//split on a space to separate the operands and operators
     	if (!(operator.equals("+")||operator.equals("-")||operator.equals("*")||operator.equals("/"))) {
-	    		return ("ERROR: Input is in an invalid format.");
+	    	return ("ERROR: Input is in an invalid format.");
+	    	//check for incorrect operators
 	    }
-    	return (op1.doMath(operator, op2).toString());
+    	return op1.doMath(operator, op2).toString();
     }
 }

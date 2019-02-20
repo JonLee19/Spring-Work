@@ -1,6 +1,10 @@
+//This class contains methods that perform various math operations
+//@author Jon Lee
+//@version February 19, 2019
 package fracCalc;
 
 public class Fraction {
+	private int wholenumber = 0;
 	private int numerator = 0;
 	private int denominator = 1;
 	private String sign = "+";
@@ -8,34 +12,36 @@ public class Fraction {
 	public Fraction() {
 		//sets a generic fraction
 	}
+	public Fraction(int wholenumber, int numerator, int denominator) {
+		this.wholenumber = wholenumber;
+		this.numerator = numerator;
+		this.denominator = denominator;
+	}
 	public Fraction(String input) {
-		//convert operands to improper fractions where the components make up an array
-    	String[] mixednumcomponents = input.split("_");
-    	if (mixednumcomponents.length>1) {
-    		//if there are 2 or more components after splitting on _, that means there was
-    		//a whole number and a fractional component
-	    	String[] fraction = mixednumcomponents[1].split("/");
-	    	//after splitting further on /, assign each value to their respective parts
-	    	this.denominator = Integer.parseInt(fraction[1]);
-	    	this.numerator = toImproperNumerator(Integer.parseInt(mixednumcomponents[0]),Integer.parseInt(fraction[0]),denominator);
-	    	//combines whole number and numerator components into an improper numerator
+		//parses input into int's for each component of the fraction	
+		String[] fraction = input.split("/");
+    	if (fraction.length>1) {
+    		//if there are >1 components after splitting on "/", that means there was a fraction part
+    		denominator = Integer.parseInt(fraction[1]);
+    		String[] components = fraction[0].split("_");
+    		numerator = Integer.parseInt(components[0]);
+    		if (components.length > 1) {
+    			//after splitting further on "_", assign each value to their respective parts
+    			wholenumber = Integer.parseInt(components[0]);
+    			numerator = Integer.parseInt(components[1]);
+    			if (wholenumber < 0) {
+    				numerator *= -1;
+    			//for math purposes, if wholenumber is negative, numerator is therefore also negative
+    			}
+	    	}
     	}
     	else {
-    		//if splitting on _ produces only one component, there is no whole number component
-	    	String[] fraction = input.split("/");
-	    	if (fraction.length>1) {
-	    		//if splitting on / produces more than one component, assign each 
-	    		//value to its respective part of the fraction
-	    		this.numerator = Integer.parseInt(fraction[0]);
-	    		this.denominator = Integer.parseInt(fraction[1]);
-	    	}
-	    	else {
-	    		//if splitting on _ and / both produce only one component, that
-	    		//value must be a whole number with no fractional components
-	    		//so set that to numerator and leave denominator as 1
-	    		this.numerator = Integer.parseInt(fraction[0]);
-	    	}
+    		wholenumber= Integer.parseInt(fraction[0]);
+    		//if splitting on / produces only one component, it is a whole number
     	}
+	}
+	public int getWholeNumber() {
+		return wholenumber;
 	}
 	public int getNumerator() {
 		return numerator;
@@ -45,6 +51,9 @@ public class Fraction {
 	}
 	public String getSign() {
 		return sign;
+	}
+	public void setWholeNumber(int num) {
+		wholenumber = num;
 	}
 	public void setNumerator(int num) {
 		numerator = num;
@@ -57,41 +66,38 @@ public class Fraction {
 	}
 	public String toString() {
 		//converts an improper fraction to mixed number using math rules
+		simplify();
+		//error checkers
+		if (numerator==0 && wholenumber==0) {
+			//if no whole number, returns the fraction, and 0 if the fraction is 0
+			return ("0");
+		}
+		if (numerator==0) {		
+			//if no whole number, returns the fraction, and 0 if the fraction is 0
+			return (""+wholenumber);
+		}
 		if (denominator==0) {
     		return("ERROR: Cannot divide by zero.");
     	}
-		if (numerator==0) {
-			return ("0");
-		}
-		//if numerator is 0, that means the fraction is equal to 0
-		int wholenumber = numerator/denominator;
 		if (wholenumber==0) {
-			if (denominator<0) {
-				numerator=-numerator;
-				denominator=-denominator;
-				//switches the negative to the numerator, because denominators can't have negative signs
-			}
+			//if no numerator, return the whole number by itself			
 			return (numerator+"/"+denominator);
-			//if no whole number, returns original fraction
 		}
-		int remainder = absValue(numerator%denominator);
-		if (remainder==0) {
-			return (""+wholenumber);
-		//if no remainder, then the numerator divides evenly and there is no fractional component
-		}
-		return (wholenumber+"_"+remainder+"/"+absValue(denominator));
-		//because denominators of fractions are always written as positives
+		return (wholenumber+"_"+absValue(numerator)+"/"+denominator);
+		//because numerators are always written as positive if there's a whole number
 	}
     public Fraction doMath(String operator, Fraction operand2) {
+    	this.toImproperFrac();
+    	operand2.toImproperFrac();
+    	//convert both fractions to improper form for calculations
     	Fraction result = new Fraction();
     	if (operator.equals("-")||operator.equals("+")) {
     		if (operator.equals("-")) {
     			operand2.setNumerator(-1*operand2.getNumerator());
+    			//subtraction is just adding by the negative of the second operand
     		}
-    		//subtraction is just adding by the negative of the second operand
     		result.setNumerator(this.numerator*operand2.getDenominator()+operand2.getNumerator()*this.denominator);
-    		//cross multiply the numerators by the other operand's denominator
-    		//and then add to get your final answer's numerator
+    		//cross multiply the numerators by the other operand's denominator, then add to get your result numerator
     		result.setDenominator(this.denominator*operand2.getDenominator());
     		//final denominator is product of the individual denominators
     	}
@@ -104,46 +110,96 @@ public class Fraction {
     		}
     		result.setNumerator(this.numerator*operand2.getNumerator());
     		result.setDenominator(this.denominator*operand2.getDenominator());
-    		//multiply numerators and denominators in fraction multiplication
+    		//multiply numerators and denominators for fraction multiplication
     	}
-    	int gcf = gcf(result.getNumerator(), result.getDenominator());
-    	result.setNumerator(result.getNumerator()/gcf);
-    	result.setDenominator(result.getDenominator()/gcf);
     	return result;
-    	//find gcf of numerator and denominator of answer, reduce the fraction by dividing 
-    	//both components by that gcf, and then return as a mixed number
     }
-    public static int toImproperNumerator(int wholenumber, int numerator, int denominator) {
-		//converts mixed number to improper fraction using math rules
-		if (wholenumber<0) {
-			numerator=-numerator;
+    public void simplify() {
+    	if (denominator<0) {
+			numerator *= -1;
+			denominator *= -1;
+			//switches the negative to the numerator, because denominators can't have negative signs
 		}
-		//if the fraction is negative, numerator needs to be negative to "add" it to whole number
-		//when converting to an improper fraction
-		return wholenumber*denominator+numerator;
-		//convert whole number to the appropriate fraction and then add to numerator to produce the improper numerator
+		int gcf = gcf();
+    	numerator /= gcf;
+    	denominator /= gcf;
+    	//reduce the fraction by dividing both components by their greatest common factor
+		if (denominator!=0) {
+	    	wholenumber += numerator/denominator;
+			numerator = numerator%denominator;
+			//converts from an improper fraction to a mixed number
+		}
+	}
+    public void toImproperFrac() {
+		//converts mixed number to improper fraction using math rules
+		if (denominator == 0) {
+			throw new IllegalArgumentException("The denominator is 0, please give the right input.");
+		}
+		numerator += wholenumber*denominator;
+		wholenumber = 0;
+	}
+    public int gcf() {
+		//finds the largest factor shared by the numerator and denominator of this fraction
+		for (int i = absValue(numerator); i > 1; i--) {
+			//starting from the denominator, count down while testing factors to see if both numerator and denominator are divisible by them
+			if (isDivisibleBy(numerator,i)==true && isDivisibleBy(denominator,i)==true) {
+					return i;
+			}
+		}
+		return 1;
+	}
+    //extra functionality for the fraction class
+    public int gcf(Fraction frac2) {
+		//finds the largest factor shared by the denominators of this fraction and the inputted fraction
+		for (int i = absValue(denominator); i > 1; i--) {
+			//starting from the denominator of this fraction, count down while testing factors to see if both denominators are divisible by them
+			if (isDivisibleBy(denominator,i)==true && isDivisibleBy(frac2.getDenominator(),i)==true) {
+					return i;
+			}
+		}
+		return 1;
+	}
+	public boolean isDivisibleBy(Fraction divisor) {
+		//true if this fraction is divisible by the inputted fraction, returns false if not
+		if (divisor.getNumerator()==0&&divisor.getWholeNumber()==0) {
+			throw new IllegalArgumentException("The given divisor is 0, please give the right input.");
+			//return error message if incorrect input is given
+		}
+		else {
+			if ((doMath("/",divisor)).getNumerator() == 0) {
+				//if after division the resulting fraction's numerator is 0, then the two fractions produced a whole number quotient, so they're divisible
+				return true;
+			}
+		}
+		return false;
+	}
+	public void absValue() {
+		if (wholenumber <= 0) {
+			wholenumber*=-1;
+			//if number is negative, changes it to positive
+		}
+	}
+	//static methods used for calculations
+    public String toImproperFrac(int wholenumber, int numerator, int denominator) {
+		//converts mixed number to improper fraction using math rules
+		if (denominator == 0) {
+			throw new IllegalArgumentException("The denominator is 0, please give the right input.");
+		}
+		int answer = wholenumber*denominator+numerator;
+		return (answer+"/"+denominator);
 	}
 	public static int gcf(int num1, int num2) {
 		//finds the largest factor shared by both given values
-		int answer = 1;
-		for (int i = absValue(num1); i > 1; i--) {
-			/*starting from the 1st input (either works), count down while testing factors
-			 * to see if both num1 and num2 are divisible by them
-			 */
+		for (int i = absValue(num1); i >= 1; i--) {
+			//starting from the 1st input (either works), count down while testing factors to see if both num1 and num2 are divisible by them
 			if (isDivisibleBy(num1,i)==true && isDivisibleBy(num2,i)==true) {
-					answer = i;
-					i = 1;
-					/*once a factor is found, assign the value to answer, then
-					 * set the control variable/counter to 1 to end the loop
-					 *  (so that "i" doesn't satisfy the test condition anymore)
-					 */
+					return i;
 			}
 		}
-		return answer;
+		return 1;
 	}
 	public static boolean isDivisibleBy(int dividend, int divisor) {
-		//if dividend divided by divisor has no remainder, it is divisible 
-		//so returns true, if not, returns false
+		//if dividend divided by divisor has no remainder, it is divisible, so returns true, if not, returns false
 		if (divisor == 0) {
 			throw new IllegalArgumentException("The given divisor is 0, please give the right input.");
 			//return error message if incorrect input is given
@@ -152,10 +208,8 @@ public class Fraction {
 			if (dividend%divisor == 0) {
 				return true;
 			}
-			else {
-				return false;
-			}
 		}
+		return false;
 	}
 	public static int absValue(int number) {
 		if (number <= 0) {
