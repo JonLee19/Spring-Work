@@ -1,5 +1,7 @@
 package fracCalc;
-
+//This class contains methods that perform various math operations
+//@author Jon Lee
+//@version February 19, 2019
 import java.util.Scanner;
 
 public class FracCalc {
