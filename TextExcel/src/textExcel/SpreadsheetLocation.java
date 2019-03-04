@@ -11,8 +11,8 @@ public class SpreadsheetLocation implements Location {
 	
 	//constructor
 	public SpreadsheetLocation(String cellName){
-        rows = cellName.charAt(0)-65;
-        cols = Integer.parseInt(cellName.substring(1, cellName.length()))-1;
+        rows = Integer.parseInt(cellName.substring(1, cellName.length()))-1;
+        cols = cellName.charAt(0)-65;
     }
 	
 	@Override
