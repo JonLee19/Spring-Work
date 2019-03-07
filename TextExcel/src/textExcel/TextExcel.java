@@ -5,7 +5,7 @@ package textExcel;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-// Update this file with your own code.
+import textExcel.TestsALL.TestLocation;
 
 public class TextExcel
 {
@@ -17,9 +17,13 @@ public class TextExcel
     	//inform the user what to input
     	String input = console.nextLine();
     	//open scanner to take in an expression
-    	while (!input.equals("quit")) {
+    	while (!input.equalsIgnoreCase("quit")) {
     		//repeat the loop until the user enters quit
+    		//input = "clear A1";
+    		//input = "B7 = A1 = ( avg A2-A3 )";
     		System.out.println(sheet.processCommand(input));
+    		//System.out.println(sheet.processCommand("A1"));
+    		//System.out.println(sheet.getGridText());
     		System.out.println("Type \"quit\" to end or new values to try again.");
     		input = console.nextLine();
     	}

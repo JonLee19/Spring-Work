@@ -2,27 +2,26 @@ package textExcel;
 //This class contains methods that determine the value of cells at a given location
 //@author Jon Lee
 //@version March 4, 2019
-//Update this file with your own code.
 
 public class SpreadsheetLocation implements Location {
-	//not used, but for later functionality, declare fields
-		private int rows;
-		private int cols;
+	//declare fields
+	private int row;
+	private int col;
 	
 	//constructor
 	public SpreadsheetLocation(String cellName){
-        rows = Integer.parseInt(cellName.substring(1, cellName.length()))-1;
-        cols = cellName.charAt(0)-65;
+        row = Integer.parseInt(cellName.substring(1, cellName.length()))-1;
+        col = cellName.toUpperCase().charAt(0)-65;
     }
 	
 	@Override
     public int getRow(){
-        return rows;
+        return row;
     }
 
     @Override
     public int getCol(){
-        return cols;
+        return col;
     }
     
 }
