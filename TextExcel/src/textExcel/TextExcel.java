@@ -19,13 +19,10 @@ public class TextExcel
     	//open scanner to take in an expression
     	while (!input.equalsIgnoreCase("quit")) {
     		//repeat the loop until the user enters quit
-    		//input = "clear A1";
-    		//input = "B7 = A1 = ( avg A2-A3 )";
+    		//input = "A1 = \"ice cream\"";
     		System.out.println(sheet.processCommand(input));
-    		//System.out.println(sheet.processCommand("A1"));
-    		//System.out.println(sheet.getGridText());
     		System.out.println("Type \"quit\" to end or new values to try again.");
-    		input = console.nextLine();
+    		input = console.nextLine().trim();
     	}
     	console.close();
     }

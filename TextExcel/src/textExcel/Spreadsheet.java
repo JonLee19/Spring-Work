@@ -12,19 +12,41 @@ public class Spreadsheet implements Grid {
 	public Spreadsheet() {
 		//initialize a 2D array of EmptyCell objects
 		sheet = new Cell[20][12];
-		for(int i = 0; i < sheet.length; i++) {
-			for (int j = 0; j < sheet[i].length; j++) {
-				sheet[i][j] = new EmptyCell();
-			}
-		}
+		clearAll();
 	}
 	
+	//getters and setters
+	@Override
+	public int getRows(){	
+		return sheet.length;
+	}
+
+	@Override
+	public int getCols(){
+		return sheet[0].length;
+	}
+
+	@Override
+	public Cell getCell(Location loc){
+		return sheet[loc.getRow()][loc.getCol()];
+	}
+
+	public void setCell(Location loc, String value){
+		//sets cell at a specific location to a given value
+		sheet[loc.getRow()][loc.getCol()] = makeCell(value);
+	}
+	
+	//spreadsheet commands functionality
 	@Override
 	public String processCommand(String command){
+		//converts input into specific commands, calls those commands, and returns the result
+		if (command.length()<2) {
+			return command;
+		}
 		if (command.length()<=3) {
 			//proves it's an inspect-only command
 			SpreadsheetLocation loc = new SpreadsheetLocation(command);
-			return sheet[loc.getRow()][loc.getCol()].fullCellText();
+			return getCell(loc).fullCellText();
 		}
 		String value = "";
 		//value to input into the cell
@@ -46,34 +68,19 @@ public class Spreadsheet implements Grid {
 		}
 		if (command.contains("=")) {
 			//proves it is an assignment statement
-			String[] components = command.split(" ",3);
+			String[] components = command.split("=",2);
 			//split on space to separate the cell#, equals sign, and value respectively
-			command = components[0];
+			command = components[0].trim();
 			//set the cell number to the first component
-			value = components[2];
+			value = components[1].trim();
 			//sets the value to be set in variable "value"
 		}
 		SpreadsheetLocation loc = new SpreadsheetLocation(command);
 		//convert "command," or the cell number, to a location
-		sheet[loc.getRow()][loc.getCol()] = new TextCell(value);
-		//replace the cell at the given location with the value determined
-		//COME BACK TO make this replacement a method to take formulas as well as text
+		setCell(loc, value);
+		//replace the cell at the given location with the value provided
 		return getGridText();
-	}
-
-	@Override
-	public int getRows(){	
-		return sheet.length;
-	}
-
-	@Override
-	public int getCols(){
-		return sheet[0].length;
-	}
-
-	@Override
-	public Cell getCell(Location loc){
-		return sheet[loc.getRow()][loc.getCol()];
+		//returns the entire spreadsheet as a string
 	}
 
 	@Override
@@ -101,6 +108,28 @@ public class Spreadsheet implements Grid {
 		return answer;
 	}
 	
+	public Cell makeCell(String value) {
+		if (value.length()<1) {
+			//if the value to input is an empty string, create an EmptyCell (different from just an empty TextCell)
+			return new EmptyCell();
+		}
+		if (value.charAt(value.length()-1)=='%') {
+			//if the string ends in %, make a PercentCell
+			return new PercentCell(value);
+		}
+		if (isNumeric(value)){
+			//if value is a real number
+			return new ValueCell(value);
+		}
+		if (value.charAt(0)=='\"') {
+			//if value has quotes it is text
+			return new TextCell(value);
+		}
+		return new FormulaCell(value);
+		//if value contains both numbers and letters, it is a formula cell
+		//if possible to distringuish a formula command, leave textcell as the last option
+	}
+	
 	public void clearAll() {
 		for(int i = 0; i < sheet.length; i++) {
 			for (int j = 0; j < sheet[i].length; j++) {
@@ -109,6 +138,7 @@ public class Spreadsheet implements Grid {
 		}
 	}
 	
+	//utility methods
 	public static String repeatchars(char s, int count) {
 		String answer = "";
 		for (int i = 0; i<count; i++) {
@@ -123,5 +153,16 @@ public class Spreadsheet implements Grid {
 			answer+=s;
 		}
 		return answer;
+	}
+	
+	//taken from online at stackoverflow and modified
+	public static boolean isNumeric(String str){
+	    for (char c : str.toCharArray()){
+	        if (!Character.isDigit(c)&&(c!='.')&&(c!='-')) {
+	        	//if the characters are not digits, decimal points, or negative signs, the string is not numeric
+	        	return false;
+	        }
+	    }
+	    return true;
 	}
 }

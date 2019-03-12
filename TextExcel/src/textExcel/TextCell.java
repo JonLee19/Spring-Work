@@ -18,13 +18,12 @@ public class TextCell implements Cell{
 			return "          ";
 		}
 		output = output.substring(1, text.length()-1);
-		//cuts off the first and last characters, which are quotes
+		//cuts off the first and last characters, which are double quotes
 		if (output.length() < 10) {
 			return output+Spreadsheet.repeatchars(' ',10-output.length());
 			//makes the result 10 spaces long
 		}
 		return output.substring(0,10); 
-		//COME BACK TO fix the error if the 10th character is a "
 	}
 	
 	// text for individual cell inspection, not truncated or padded
