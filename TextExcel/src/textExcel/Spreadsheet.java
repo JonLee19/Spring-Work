@@ -28,12 +28,23 @@ public class Spreadsheet implements Grid {
 
 	@Override
 	public Cell getCell(Location loc){
+		if (loc.getRow() > getRows()-1) {
+			throw new IllegalArgumentException("The given row # is outside of the bounds of the spreadsheet");
+		}
+		if (loc.getCol() > getCols()-1) {
+			throw new IllegalArgumentException("The given column # is outside of the bounds of the spreadsheet");
+		}
 		return sheet[loc.getRow()][loc.getCol()];
 	}
 
 	public void setCell(Location loc, String value){
 		//sets cell at a specific location to a given value
 		sheet[loc.getRow()][loc.getCol()] = makeCell(value);
+	}
+	
+	public double shareCell(SpreadsheetLocation loc) {
+		RealCell c = (RealCell) getCell(loc);
+		return c.getDoubleValue();
 	}
 	
 	//spreadsheet commands functionality
@@ -64,7 +75,6 @@ public class Spreadsheet implements Grid {
 			}
 		value = "";
 		//to clear, replace the cell(s) with an empty string
-		//COME BACK TO later in order to change to an empty cell
 		}
 		if (command.contains("=")) {
 			//proves it is an assignment statement
@@ -125,9 +135,14 @@ public class Spreadsheet implements Grid {
 			//if value has quotes it is text
 			return new TextCell(value);
 		}
-		return new FormulaCell(value);
-		//if value contains both numbers and letters, it is a formula cell
-		//if possible to distringuish a formula command, leave textcell as the last option
+		if (isFormula(value)) {
+			//if value contains parentheses it is a formula cell
+			return new FormulaCell(value, this);
+		}
+		else {
+			throw new IllegalArgumentException("That is not a valid input.");
+		}
+		
 	}
 	
 	public void clearAll() {
@@ -153,6 +168,15 @@ public class Spreadsheet implements Grid {
 			answer+=s;
 		}
 		return answer;
+	}
+	
+	public static boolean isFormula(String str) {
+	    //if (!(str.toLowerCase().contains("sum")||str.toLowerCase().contains("avg")||str.contains("+")||str.contains("-")||str.contains("*")||str.contains("/"))) {
+		 if (str.charAt(0)=='('||str.charAt(str.length()-1)==')') {    	
+		//if the characters have parentheses, it's a formula
+	        	return true;
+	    }
+	    return false;
 	}
 	
 	//taken from online at stackoverflow and modified

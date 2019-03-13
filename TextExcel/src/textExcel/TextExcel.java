@@ -19,7 +19,7 @@ public class TextExcel
     	//open scanner to take in an expression
     	while (!input.equalsIgnoreCase("quit")) {
     		//repeat the loop until the user enters quit
-    		//input = "A1 = \"ice cream\"";
+    		//input = "F3 = ( 1 + 3 + F2 + F1 - 3 - 1 )";
     		System.out.println(sheet.processCommand(input));
     		System.out.println("Type \"quit\" to end or new values to try again.");
     		input = console.nextLine().trim();

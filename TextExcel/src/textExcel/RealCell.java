@@ -9,7 +9,7 @@ public abstract class RealCell implements Cell {
 	
 	// text for spreadsheet cell display, must be exactly length 10
 	public String abbreviatedCellText() {
-		String output = input;
+		String output = ""+getDoubleValue();
 		if (output.length() < 10) {
 			return output+Spreadsheet.repeatchars(' ',10-output.length());
 			//makes the result 10 spaces long

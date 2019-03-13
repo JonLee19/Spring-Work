@@ -9,8 +9,8 @@ public class PercentCell extends RealCell {
 	@Override
 	// text for spreadsheet cell display, must be exactly length 10
 	public String abbreviatedCellText() {
-		String output = super.fullCellText();
-		//gets the field "input" for this percent cell
+		String output = (int) getDoubleValue()+"%";
+		//truncates on the decimal point and adds percent sign
 		if (output.length() < 10) {
 			return output+Spreadsheet.repeatchars(' ',10-output.length());
 			//makes the result 9 spaces long, so it's 10 when the percent sign is added
@@ -27,6 +27,6 @@ public class PercentCell extends RealCell {
 	@Override
 	public double getDoubleValue() {
 		return Double.parseDouble(super.fullCellText().substring(0,super.fullCellText().length()-1));
-			//parses after removing the percent sign
+			//parses after removing the percent sign, keeps it in percent format (2 decimal points over)
 	}
 }
