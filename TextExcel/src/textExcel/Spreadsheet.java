@@ -36,6 +36,17 @@ public class Spreadsheet implements Grid {
 		}
 		return sheet[loc.getRow()][loc.getCol()];
 	}
+	
+	//alternate getter for utility
+	public Cell getCell(int row, int col){
+		if (row > getRows()-1) {
+			throw new IllegalArgumentException("The given row # is outside of the bounds of the spreadsheet");
+		}
+		if (col > getCols()-1) {
+			throw new IllegalArgumentException("The given column # is outside of the bounds of the spreadsheet");
+		}
+		return sheet[row][col];
+	}
 
 	public void setCell(Location loc, String value){
 		//sets cell at a specific location to a given value
@@ -46,6 +57,9 @@ public class Spreadsheet implements Grid {
 		RealCell c = (RealCell) getCell(loc);
 		return c.getDoubleValue();
 	}
+	
+	//toString
+	
 	
 	//spreadsheet commands functionality
 	@Override

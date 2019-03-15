@@ -23,6 +23,8 @@ public abstract class RealCell implements Cell {
 	}
 	
 	public abstract double getDoubleValue();
+
+	//toString
 	
 	//easier version
 	/*public double getDoubleValue() {

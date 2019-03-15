@@ -30,4 +30,6 @@ public class TextCell implements Cell{
 	public String fullCellText() {
 		return text;
 	}
+	
+	//toString
 }

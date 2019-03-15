@@ -1,6 +1,6 @@
 package textExcel;
 
-import java.util.Arrays;
+import java.util.*;
 
 //import fracCalc.Fraction;
 
@@ -16,22 +16,78 @@ public class FormulaCell extends RealCell{
 	public double getDoubleValue() {
 		String formula = super.fullCellText().substring(1,super.fullCellText().length()-1).trim();
 		//store the formula after removing the parentheses and spaces from the edges
-		String[] splitted = formula.split(" ");
-		String answer = splitted[0];
-    	for (int i = 2; i<splitted.length; i+=2) {
-    		answer = doMath(answer, splitted[i-1], splitted[i]);
+		ArrayList<String> splitted = new ArrayList<String>(Arrays.asList(formula.split(" ")));
+		//split on space and store as an array list for added flexibility (changes length)
+		if (splitted.size()==2) {
+			String[] range = splitted.get(1).split("-");
+			splitted.set(1, splitted.get(0));
+			splitted.set(0, range[0]);
+			splitted.add(range[1]);
+			//reorder the components so that sum or avg is the operator
+		}
+		String answer = splitted.get(0);
+    	for (int i = 2; i<splitted.size(); i+=2) {
+    		answer = ""+doMath(answer, (splitted.get(i-1)), splitted.get(i));
+    		//repeat math operations until end of formula string
     	}
     	return Double.parseDouble(answer);
-	
 	}
 	
-	public String doMath(String op1, String operator, String op2) {
-		if (op1.equalsIgnoreCase("sum")) {
-			//COME BACK TO SUM AND AVG
-			return op1;
+	public double doMath(String op1, String operator, String op2) {
+		//for sum and avg, those terms come first, followed by the 2 operands
+		//the first operand comes in the operator slot for sum and avg
+		if (operator.equalsIgnoreCase("sum")) {
+			double answer = 0;
+			System.out.println("op1 "+op1+" op2 "+op2);
+			SpreadsheetLocation loc1 = new SpreadsheetLocation(op1);
+			SpreadsheetLocation loc2 = new SpreadsheetLocation(op2);
+			for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
+				for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
+					System.out.println("i is "+i+" j is "+j);
+					Cell cell = sheet.getCell(i, j);
+					if (cell instanceof FormulaCell&&!(cell==this)) {
+						//to make sure these are not the same cell
+						System.out.println("value to add"+((FormulaCell) sheet.getCell(i, j)).getDoubleValue());
+						answer += ((FormulaCell) sheet.getCell(i, j)).getDoubleValue();
+						System.out.println("inside formulacell, this is the value of answer: "+answer);
+					}
+					else if (cell instanceof RealCell) {
+						answer += ((RealCell) sheet.getCell(i, j)).getDoubleValue();
+						System.out.println("inside realcell, this is the value of answer: "+answer);
+					}
+					else {
+						throw new IllegalArgumentException("One or more cells you are trying to sum is not a real (numeric) cell");
+					}
+					System.out.println("this is the value of answer: "+answer);
+					System.out.println("this is the value of i: "+i);
+					System.out.println("this is the value of j: "+j);
+				}
+			}
+			return answer;
 		}
-		if (op1.equalsIgnoreCase("avg")) {
-			return op1;
+		if (operator.equalsIgnoreCase("avg")) {
+			double answer = 0;
+			int count = 0;
+			SpreadsheetLocation loc1 = new SpreadsheetLocation(op1);
+			SpreadsheetLocation loc2 = new SpreadsheetLocation(op2);
+			for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
+				for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
+					Cell cell = sheet.getCell(i, j);
+					if (cell instanceof FormulaCell&&!(cell==this)) {
+						//to make sure these are not the same cell
+						answer += ((FormulaCell) sheet.getCell(i, j)).getDoubleValue();
+						count++;
+					}
+					else if (cell instanceof RealCell) {
+						answer += ((RealCell) sheet.getCell(i, j)).getDoubleValue();
+						count++;
+					}
+					else {
+						throw new IllegalArgumentException("One or more cells you are trying to sum is not a real (numeric) cell");
+					}
+				}
+			}
+			return (answer/count);
 		}
 		double op1val = parseOperand(op1);
 		double op2val = parseOperand(op2);
@@ -41,17 +97,17 @@ public class FormulaCell extends RealCell{
 				op2val = 1/op2val;
 				//division is multiplaction by the reciprical
 			}
-			return ""+(op1val*op2val);
+			return (op1val*op2val);
 		}
 		if (operator.equals("+")||operator.equals("-")) {
 			if (operator.equals("-")) {
 				op2val = -1*op2val;
     			//subtraction is just adding by the negative of the second operand
     		}
-			return ""+(op1val+op2val);
+			return (op1val+op2val);
 		}
 		else {
-			return ("ERROR: Input is in an invalid format.");
+			throw new IllegalArgumentException("ERROR: Input is in an invalid format.");
 			//final possible path
 		}
 		//for PEMDAS
@@ -120,6 +176,12 @@ public class FormulaCell extends RealCell{
     	}
     	*/
 	}
+	
+	//toString and .equals
+	
+	//public double specialOperation() {
+		
+	//}
 	
 	public double parseOperand(String op) {
 		if (Spreadsheet.isNumeric(op)) {
