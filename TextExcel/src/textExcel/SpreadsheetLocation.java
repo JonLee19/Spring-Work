@@ -24,4 +24,20 @@ public class SpreadsheetLocation implements Location {
         return col;
     }
     
+    //toString
+    public String toString() {
+    	return ("Spreadsheet Location: row: "+row+", col: "+col);
+    }
+    
+    //equals method
+    public boolean equals(Object o) {
+    	if(o instanceof SpreadsheetLocation) {
+    		SpreadsheetLocation obj = (SpreadsheetLocation) o;
+    		if (this.getRow()==obj.getRow()&&this.getCol()==obj.getCol()) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
 }

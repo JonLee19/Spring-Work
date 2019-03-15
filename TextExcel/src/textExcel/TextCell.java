@@ -32,4 +32,18 @@ public class TextCell implements Cell{
 	}
 	
 	//toString
+	public String toString() {
+	    return ("Text Cell: "+fullCellText());
+	}
+	
+	//equals method
+    public boolean equals(Object o) {
+    	if(o instanceof TextCell) {
+    		TextCell obj = (TextCell) o;
+    		if (this.fullCellText().equals(obj.fullCellText())) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
 }

@@ -18,4 +18,15 @@ public class EmptyCell implements Cell {
 	}
 	
 	//toString
+	public String toString() {
+	    return ("Empty Cell: "+fullCellText());
+	}
+	
+	//equals method
+    public boolean equals(Object o) {
+    	if(o instanceof EmptyCell) {
+    			return true;
+    	}
+    	return false;
+    }
 }

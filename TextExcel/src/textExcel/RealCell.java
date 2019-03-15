@@ -25,7 +25,21 @@ public abstract class RealCell implements Cell {
 	public abstract double getDoubleValue();
 
 	//toString
+    public String toString() {
+    	return (getClass()+": text: "+fullCellText());
+    }
 	
+    //equals method
+    public boolean equals(Object o) {
+    	if(o instanceof RealCell) {
+    		RealCell obj = (RealCell) o;
+    		if (this.getDoubleValue()==obj.getDoubleValue()) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
 	//easier version
 	/*public double getDoubleValue() {
 		if (input.contains("%")) {

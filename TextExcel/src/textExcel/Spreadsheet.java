@@ -1,4 +1,7 @@
 package textExcel;
+
+import java.util.Arrays;
+
 //This class contains methods that represent a spreadsheet's functionality
 //@author Jon Lee
 //@version March 4, 2019
@@ -47,20 +50,30 @@ public class Spreadsheet implements Grid {
 		}
 		return sheet[row][col];
 	}
+	
+	public Cell[][] getSheet() {
+		return sheet;
+	}
 
 	public void setCell(Location loc, String value){
 		//sets cell at a specific location to a given value
 		sheet[loc.getRow()][loc.getCol()] = makeCell(value);
 	}
 	
-	public double shareCell(SpreadsheetLocation loc) {
-		RealCell c = (RealCell) getCell(loc);
-		return c.getDoubleValue();
-	}
+	//equals method
+    public boolean equals(Object o) {
+    	if(o instanceof Spreadsheet) {
+    		Spreadsheet obj = (Spreadsheet) o;
+    		if (Arrays.deepEquals(sheet, obj.getSheet())) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
 	
-	//toString
-	
-	
+	//Methods to ADD ROWS AND COLUMNS??
+    
+    
 	//spreadsheet commands functionality
 	@Override
 	public String processCommand(String command){

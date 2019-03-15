@@ -11,4 +11,9 @@ public class ValueCell extends RealCell{
 		return Double.parseDouble(super.fullCellText());
 		//for real cells, parses directly
 	}
+	
+	//toString
+	public String toString() {
+	    return ("Value Cell: "+fullCellText());
+	}
 }

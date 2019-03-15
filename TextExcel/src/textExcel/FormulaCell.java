@@ -52,8 +52,90 @@ public class FormulaCell extends RealCell{
 			throw new IllegalArgumentException("ERROR: Input is in an invalid format.");
 			//final possible path
 		}
+	}
+	
+	public double specialOperation(String operator, String argument) {
+		String[] range = argument.split("-");
+		SpreadsheetLocation loc1 = new SpreadsheetLocation(range[0]);
+		SpreadsheetLocation loc2 = new SpreadsheetLocation(range[1]);
+		if (operator.equalsIgnoreCase("sum")) {
+			return sum(loc1, loc2);
+		}
+		else if (operator.equalsIgnoreCase("avg")) {
+			int count = (loc2.getRow()-loc1.getRow()+1)*(loc2.getCol()-loc1.getCol()+1);
+			//how many cells are added up
+			return sum(loc1, loc2)/count;
+		}
+		else {
+			throw new IllegalArgumentException(
+					"the operation you are attempting to use is unsupported");
+		}
+	}
+	
+	public static double sum(SpreadsheetLocation loc1, SpreadsheetLocation loc2) {
+		double answer= 0;
+		for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
+			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
+				Cell cell = sheet.getCell(i, j);
+				if (cell instanceof FormulaCell ) {//&& !(cell == this)
+					// to make sure these are not the same cell
+					answer += ((FormulaCell) sheet.getCell(i, j)).getDoubleValue();
+				} 
+				else if (cell instanceof RealCell) {
+					answer += ((RealCell) sheet.getCell(i, j)).getDoubleValue();
+				} 
+				else {
+					throw new IllegalArgumentException(
+							"One or more cells you are trying to sum is not a real (numeric) cell");
+				}
+			}
+		}
+		return answer;
+	}
+	
+	public double parseOperand(String op) {
+		if (Spreadsheet.isNumeric(op)) {
+			return Double.parseDouble(op);
+		}
+		else { //a cell#
+			SpreadsheetLocation loc = new SpreadsheetLocation(op);
+			if (!(sheet.getCell(loc) instanceof RealCell)) {
+				//if its not a type of real cell
+				throw new IllegalArgumentException(
+						"The cell you refer to has no numeric value, so the formula cannot be calculated");
+			}
+			RealCell c = (RealCell) sheet.getCell(loc);
+			return c.getDoubleValue();
+		}
+		
+	}
+	
+	//toString
+	public String toString() {
+    	return ("Formula Cell: "+fullCellText());
+    }
+	
+	/*public double doMathPEMDAS(double op1, String operator, double op2) {
+		//elementary functions
+		if (operator.equals("/")||operator.equals("*")) {
+			if (operator.equals("/")) {
+				op2=1/op2;
+				//division is multiplaction by the reciprical
+			}
+			return (op1*op2);
+		}
+		if (operator.equals("+")||operator.equals("-")) {
+			if (operator.equals("-")) {
+				op2 = -1*op2;
+    			//subtraction is just adding by the negative of the second operand
+    		}
+			return (op1+op2);
+		}
+		else {
+			throw new IllegalArgumentException("ERROR: Input is in an invalid format.");
+			//final possible path
+		}
 		//for PEMDAS
-    	/*
 		if (operator.equals("/")||operator.equals("*")) {
     			int temp = i;
 		    	multipliedanswer = stringToImproperFrac(splitted[i-2]);
@@ -116,65 +198,17 @@ public class FormulaCell extends RealCell{
 		if (addedanswer[1]==0) {
     		return("ERROR: Cannot divide by zero.");
     	}
-    	*/
-	}
-	
-	//toString and .equals
-	
-	public double specialOperation(String operator, String argument) {
-		String[] range = argument.split("-");
-		SpreadsheetLocation loc1 = new SpreadsheetLocation(range[0]);
-		SpreadsheetLocation loc2 = new SpreadsheetLocation(range[1]);
-		if (operator.equalsIgnoreCase("sum")) {
-			return sum(loc1, loc2);
-		}
-		else if (operator.equalsIgnoreCase("avg")) {
-			int count = (loc2.getRow()-loc1.getRow()+1)*(loc2.getCol()-loc1.getCol()+1);
-			//how many cells are added up
-			return sum(loc1, loc2)/count;
-		}
-		else {
-			throw new IllegalArgumentException(
-					"the operation you are attempting to use is unsupported");
-		}
-	}
-	
-	public static double sum(SpreadsheetLocation loc1, SpreadsheetLocation loc2) {
-		double answer= 0;
-		for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
-			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
-				Cell cell = sheet.getCell(i, j);
-				if (cell instanceof FormulaCell ) {//&& !(cell == this)
-					// to make sure these are not the same cell
-					answer += ((FormulaCell) sheet.getCell(i, j)).getDoubleValue();
-				} 
-				else if (cell instanceof RealCell) {
-					answer += ((RealCell) sheet.getCell(i, j)).getDoubleValue();
-				} 
-				else {
-					throw new IllegalArgumentException(
-							"One or more cells you are trying to sum is not a real (numeric) cell");
-				}
-			}
-		}
-		return answer;
-	}
-	
-	public double parseOperand(String op) {
-		if (Spreadsheet.isNumeric(op)) {
-			return Double.parseDouble(op);
-		}
-		else { //a cell#
-			SpreadsheetLocation loc = new SpreadsheetLocation(op);
-			RealCell c = (RealCell) sheet.getCell(loc);
-			return c.getDoubleValue();
-		}
-		
-	}
+    	
+	}*/
 }
 
 
-/*
+
+
+
+
+
+/*first version working for checkpoint 5, saved here
  * package textExcel;
 
 import java.util.*;

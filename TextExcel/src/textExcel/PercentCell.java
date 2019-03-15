@@ -29,4 +29,9 @@ public class PercentCell extends RealCell {
 		return Double.parseDouble(super.fullCellText().substring(0,super.fullCellText().length()-1));
 			//parses after removing the percent sign, keeps it in percent format (2 decimal points over)
 	}
+	
+	//toString
+	public String toString() {
+    	return ("Percent Cell: "+super.fullCellText());
+    }
 }
