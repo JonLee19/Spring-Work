@@ -1,6 +1,8 @@
 package textExcel;
 
-public abstract class RealCell implements Cell {
+//import java.lang.*;
+
+public abstract class RealCell implements Cell, Comparable<Cell> {
 	private String input;
 	
 	public RealCell(String i) {
@@ -24,6 +26,27 @@ public abstract class RealCell implements Cell {
 	
 	public abstract double getDoubleValue();
 
+	//@Override
+	//compares to another cell
+	public int compareTo(Cell c) {
+		//compares to another cell and returns -1 if this is less than that object, 0 if they're equals, and +1 if its greater than that object 
+		if (c instanceof RealCell) {
+			RealCell r = (RealCell) c;
+			//cast to a real cell to get the value
+			if (this.getDoubleValue() < r.getDoubleValue()) {
+				return -1;
+				//returns -1 if this is less than the given cell
+			}
+			else if(this.getDoubleValue()==r.getDoubleValue()) {
+				return 0;
+				//returns 0 if this is less than the given cell
+			}
+			//compare the values of both real cells to determine which is greater
+		}
+		return 1;
+		//real cell is greater than every other type of cell
+	}
+	
 	//toString
     public String toString() {
     	return (getClass()+": text: "+fullCellText());
@@ -39,15 +62,4 @@ public abstract class RealCell implements Cell {
     	}
     	return false;
     }
-    
-	//easier version
-	/*public double getDoubleValue() {
-		if (input.contains("%")) {
-			return Double.parseDouble(input.substring(0,input.length()-1));
-			//parses after removing the percent sign
-		}
-		return Double.parseDouble(input);
-		//for real cells, parses directly
-	}
-	*/
 }
