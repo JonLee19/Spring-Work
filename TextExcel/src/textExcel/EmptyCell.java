@@ -20,6 +20,7 @@ public class EmptyCell implements Cell, Comparable<Cell> {
 		return "";
 	}
 	
+	
 	//@Override
 	//compares to another cell
 	public int compareTo(Cell c) {

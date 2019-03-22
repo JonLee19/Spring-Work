@@ -33,6 +33,7 @@ public class TextCell implements Cell, Comparable<Cell> {
 		return text;
 	}
 	
+	
 	//@Override
 	//compares to another cell
 	public int compareTo(Cell c) {
