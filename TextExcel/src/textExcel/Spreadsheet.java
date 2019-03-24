@@ -58,10 +58,15 @@ public class Spreadsheet implements Grid {
 		sheet[loc.getRow()][loc.getCol()] = makeCell(value);
 	}
 	
-	//alternate setter for utility
+	//alternate setters for utility
 	public void setCell(int row, int col, String value){
 		//sets cell at a specific location to a given value
 		sheet[row][col] = makeCell(value);
+	}
+	
+	public void setCell(int row, int col, Cell c){
+		//sets cell at a specific location to a given value
+		sheet[row][col] = c;
 	}
 	
 	public Cell[][] getSheet() {
@@ -206,199 +211,79 @@ public class Spreadsheet implements Grid {
 	//sorting
 	public String sorta(String range) {
 		//sorts a range of cells in ascending order
-		boolean textOnly = true;
-		ArrayList<String> storetext = new ArrayList<String>();	
-		ArrayList<Double> storeval = new ArrayList<Double>();
-		String[] splitted = range.split("-");
-		SpreadsheetLocation loc1 = new SpreadsheetLocation(splitted[0].trim());
-		SpreadsheetLocation loc2 = new SpreadsheetLocation(splitted[1].trim());	
-		for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
-			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
-				if (getCell(i, j) instanceof TextCell || getCell(i, j) instanceof EmptyCell) {
-					storetext.add(getCell(i, j).fullCellText());
-				}
-				else if (getCell(i, j) instanceof RealCell) {
-					storeval.add(((RealCell) getCell(i, j)).getDoubleValue());
-					textOnly=false;
-				}
-				else {
-					throw new IllegalArgumentException("One of the cells you are trying to sort is not a valid type of cell");
-				}
-			}
-		}
-		//System.out.println("Accessed all cells");
-		ArrayList<String> sortedtext = sortStrings(storetext);
-		ArrayList<Double> sortedval = sortDoubles(storeval);
-		// for combining text and real values in sorting
-		int count = 0;
-		if (textOnly==true) {
-			for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
-				for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
-					setCell(i, j, sortedtext.get(count));
-					count++;
-					//System.out.println("added text "+count+" times");
-				}
-			}
-		}
-		else {
-			//System.out.println("entered double adding");
-			for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
-				for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
-					if (count < sortedtext.size()) {
-						setCell(i, j, sortedtext.get(count));
-					}
-					else {
-						setCell(i, j, ""+sortedval.get(count-sortedtext.size()));
-					}
-					count++;
-					//System.out.println("added double "+count+" times");
-				}
-			}
-		}
-		return getGridText();
+		return sortRange(range, false);
 	}
 		
 	public String sortd(String range) {
 		//sorts a range of cells in descending order
-		boolean textOnly = true;
-		ArrayList<String> storetext = new ArrayList<String>();	
-		ArrayList<Double> storeval = new ArrayList<Double>();
+		return sortRange(range, true);
+	}
+	
+	public String sortRange(String range, boolean descending) {
+		//sorts a range of cells in ascending order
+		ArrayList<Cell> storecell = new ArrayList<Cell>();
 		String[] splitted = range.split("-");
 		SpreadsheetLocation loc1 = new SpreadsheetLocation(splitted[0].trim());
 		SpreadsheetLocation loc2 = new SpreadsheetLocation(splitted[1].trim());	
 		for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
 			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
-				if (getCell(i, j) instanceof TextCell||getCell(i, j) instanceof EmptyCell) {
-					storetext.add(getCell(i, j).fullCellText());
+				if (getCell(i, j) instanceof FormulaCell) {
+					//doesn't work with formula cells for now
+					throw new IllegalArgumentException("One of the cells you are trying to sort is not a valid type of cell");	
 				}
-				else if (getCell(i, j) instanceof RealCell) {
-					storeval.add(((RealCell) getCell(i, j)).getDoubleValue());
-					textOnly=false;
-				}
-				else {
-					throw new IllegalArgumentException("One of the cells you are trying to sort is not a valid type of cell");
-				}
+				storecell.add(getCell(i, j));
 			}
 		}
-		//System.out.println("Accessed all cells");
-		ArrayList<String> sortedtext = sortStrings(storetext);
-		ArrayList<Double> sortedval = sortDoubles(storeval);
-		Collections.reverse(sortedtext);
-		Collections.reverse(sortedval);
-		// for combining text and real values in sorting
+		ArrayList<Cell> sortedcells = sortArray(storecell);
+		if (descending == true) {
+			Collections.reverse(sortedcells);
+		}
+		//insert the sorted cells back into the spreadsheet
 		int count = 0;
-		if (textOnly==true) {
-			for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
-				for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
-					setCell(i, j, sortedtext.get(count));
-					count++;
-					//System.out.println("added text "+count+" times");
-				}
-			}
-		}
-		else {
-			//System.out.println("entered double adding");
-			for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
-				for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
-					if (count < sortedtext.size()) {
-						setCell(i, j, sortedtext.get(count));
-					}
-					else {
-						setCell(i, j, ""+sortedval.get(count-sortedtext.size()));
-					}
-					count++;
-					//System.out.println("added double "+count+" times");
-				}
+		for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
+			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
+				setCell(i, j, sortedcells.get(count));
+				count++;
 			}
 		}
 		return getGridText();
 	}
-	
+
 	//utility methods
-	public static ArrayList<String> sortStrings (ArrayList<String> arr) {
-		ArrayList<String> answer = new ArrayList<String>();
-		if (arr.size()>0) {
-			answer.add(arr.get(0));
-			for (int i = 1; i < arr.size(); i++) {
-				String element = arr.get(i);
-				//System.out.println(arr.get(i));
-				//taking each element in the given array, place that element correctly in the answer array
-				boolean added = false;
-				for (int j = 0; j < answer.size(); j++) {
-					//System.out.println(j);
-					//System.out.println(answer.toString()+" is the current answer");
-					//parse through the items of answer array to place element correctly
-					if (firstAlphabetically(element, answer.get(j)).equalsIgnoreCase(element)) {
-						//if element is alphabetically before the given item of the array, place it in the array ahead of that item
-						answer.add(j, element);
-						added = true;
-						j= answer.size()+1;
-						//get out of the loop once you've set it
-					}
-					//System.out.println(answer.toString());
-				}
-				if (added==false) {
-					answer.add(element);
-					//if reaches the end of the loop without adding element, add it to the end
-				}
-			}
+	public static ArrayList<Cell> sortArray(ArrayList<Cell> arr) {
+		//returns a sorted copy of the array passed in
+		ArrayList<Cell> arrsorted = new ArrayList<Cell>();
+		//int initiallength = arr.size();
+		for (int i = 0; i < arr.size(); i = i) {
+			//because a cell will be removed each time i does not need to iterate
+			arrsorted.add(min(arr));
+			arr.remove(min(arr));
+			//add the earliest cell from the inputed array to the answer array, then remove it from the former
 		}
-		return answer;	
+		return arrsorted;
 	}
 	
-	public static ArrayList<Double> sortDoubles (ArrayList<Double> arr) {
-		ArrayList<Double> answer = new ArrayList<Double>();
-		if (arr.size()>0) {
-			answer.add(arr.get(0));
-			for (int i = 1; i < arr.size(); i++) {
-				double element = arr.get(i);
-				//taking each element in the given array, place that element correctly in the answer array
-				boolean added = false;
-				for (int j = 0; j < answer.size(); j++) {
-					//parse through the items of answer array to place element correctly
-					if (element < answer.get(j)) {
-						//if element is less than the given item of the array, place it in the array ahead of that item
-						answer.add(j, element);
-						added = true;
-						j = answer.size()+1;
-						//get out of the loop once you've set it
-					}
+	public static Cell min(ArrayList<Cell> cell) {
+		Cell min = cell.get(0);
+		for (int i = 1; i < cell.size(); i++) {
+			//if the current cell is less than min, reset min to that cell
+			if (cell.get(i) instanceof RealCell) {
+				if (((RealCell) cell.get(i)).compareTo(min)==-1) {
+					min = cell.get(i);
 				}
-				if (added==false) {
-					answer.add(element);
-					//if reaches the end of the loop without adding element, add it to the end
+			}
+			else if (cell.get(i) instanceof TextCell) {
+				if (((TextCell) cell.get(i)).compareTo(min)==-1) {
+					min = cell.get(i);
+				}
+			}
+			else { //the cell must then be an empty cell
+				if (((EmptyCell) cell.get(i)).compareTo(min)==-1) {
+					min = cell.get(i);
 				}
 			}
 		}
-		return answer;	
-	}
-	
-	public static String firstAlphabetically(String s1, String s2) {
-		s1.toUpperCase();
-		s2.toUpperCase();
-		for (int i = 0; i < shorter(s1, s2).length(); i++) {
-			//parse through the strings comparing letters, returning whichever one comes first alphabetically
-			if (s1.charAt(i) < s2.charAt(i)) {
-				return s1;
-			}
-			else if (s1.charAt(i) > s2.charAt(i)) {
-				return s2;
-			}
-			//if both tests fail, the first letters of the two words are the same, so repeat check for the next letter and so on
-		}
-		return shorter(s1, s2);
-		//if all letters up until the end of one word are the same, then the shorter word comes first
-	}
-		
-	public static String shorter(String s1, String s2) {
-		String shorter;
-		if (s1.length()<=s2.length()) {
-			shorter = s1;
-		}
-		else {
-			shorter = s2;
-		}
-		return shorter;
+		return min;
 	}
 	
 	public static String repeatchars(char s, int count) {
@@ -427,7 +312,6 @@ public class Spreadsheet implements Grid {
 	    }
 	    return true;
 	}
-	
 	
 	//not needed but could be useful elsewhere
 	public static boolean isFormula(String str) {

@@ -38,7 +38,7 @@ public abstract class RealCell implements Cell, Comparable<Cell> {
 				return -1;
 				//returns -1 if this is less than the given cell
 			}
-			else if(this.getDoubleValue()==r.getDoubleValue()) {
+			else if (this.getDoubleValue()==r.getDoubleValue()) {
 				return 0;
 				//returns 0 if this is less than the given cell
 			}
