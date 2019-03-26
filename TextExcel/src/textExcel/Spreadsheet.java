@@ -34,38 +34,61 @@ public class Spreadsheet implements Grid {
 	@Override
 	public Cell getCell(Location loc){
 		if (loc.getRow() > getRows()-1) {
-			throw new IllegalArgumentException("The given row # is outside of the bounds of the spreadsheet");
+			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
 		}
 		if (loc.getCol() > getCols()-1) {
-			throw new IllegalArgumentException("The given column # is outside of the bounds of the spreadsheet");
+			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
 		}
+		//check if that location is within the bounds of this spreadsheet
 		return sheet[loc.getRow()][loc.getCol()];
 	}
 	
 	//alternate getter for utility
 	public Cell getCell(int row, int col){
 		if (row > getRows()-1) {
-			throw new IllegalArgumentException("The given row # is outside of the bounds of the spreadsheet");
+			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
 		}
 		if (col > getCols()-1) {
-			throw new IllegalArgumentException("The given column # is outside of the bounds of the spreadsheet");
+			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
 		}
+		//check if that location is within the bounds of this spreadsheet
 		return sheet[row][col];
 	}
 
 	public void setCell(Location loc, String value){
 		//sets cell at a specific location to a given value
+		if (loc.getRow() > getRows()-1) {
+			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
+		}
+		if (loc.getCol() > getCols()-1) {
+			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
+		}
+		//check if that location is within the bounds of this spreadsheet
 		sheet[loc.getRow()][loc.getCol()] = makeCell(value);
 	}
 	
 	//alternate setters for utility
 	public void setCell(int row, int col, String value){
 		//sets cell at a specific location to a given value
+		if (row > getRows()-1) {
+			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
+		}
+		if (col > getCols()-1) {
+			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
+		}
+		//check if that location is within the bounds of this spreadsheet
 		sheet[row][col] = makeCell(value);
 	}
 	
 	public void setCell(int row, int col, Cell c){
 		//sets cell at a specific location to a given value
+		if (row > getRows()-1) {
+			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
+		}
+		if (col > getCols()-1) {
+			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
+		}
+		//check if that location is within the bounds of this spreadsheet
 		sheet[row][col] = c;
 	}
 	
@@ -112,7 +135,7 @@ public class Spreadsheet implements Grid {
 			}
 			else {
 				throw new IllegalArgumentException(
-					"the sorting method you called is not a valid command");
+					"ERROR: the sorting method you called is not a valid command");
 			}
 		}
 		String value = "";
@@ -204,7 +227,7 @@ public class Spreadsheet implements Grid {
 			return new FormulaCell(value, this);
 		}
 		else {
-			throw new IllegalArgumentException("That is not a valid input.");
+			throw new IllegalArgumentException("ERROR: That is not a valid input.");
 		}
 	}
 	
@@ -229,7 +252,7 @@ public class Spreadsheet implements Grid {
 			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
 				if (getCell(i, j) instanceof FormulaCell) {
 					//doesn't work with formula cells for now
-					throw new IllegalArgumentException("One of the cells you are trying to sort is not a valid type of cell");	
+					throw new IllegalArgumentException("ERROR: One of the cells you are trying to sort is not a valid type of cell");	
 				}
 				storecell.add(getCell(i, j));
 			}
