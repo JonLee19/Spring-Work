@@ -1,12 +1,11 @@
 package textExcel;
+//This class contains methods that represent a spreadsheet's functionality
+//@author Jon Lee
+//@version March 4, 2019
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-
-//This class contains methods that represent a spreadsheet's functionality
-//@author Jon Lee
-//@version March 4, 2019
 
 public class Spreadsheet implements Grid {
 	

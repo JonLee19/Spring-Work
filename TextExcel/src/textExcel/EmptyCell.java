@@ -3,8 +3,6 @@ package textExcel;
 //@author Jon Lee
 //@version March 4, 2019
 
-//import java.lang.*;
-
 public class EmptyCell implements Cell, Comparable<Cell> {
 	
 	//constructor
@@ -19,7 +17,6 @@ public class EmptyCell implements Cell, Comparable<Cell> {
 	public String fullCellText() {
 		return "";
 	}
-	
 	
 	//@Override
 	//compares to another cell

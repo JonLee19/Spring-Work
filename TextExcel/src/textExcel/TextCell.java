@@ -1,6 +1,7 @@
 package textExcel;
-
-//import java.lang.*;
+//This class contains methods that represent a spreadsheet's functionality
+//@author Jon Lee
+//@version March 4, 2019
 
 public class TextCell implements Cell, Comparable<Cell> {
 	

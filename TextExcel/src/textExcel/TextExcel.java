@@ -2,10 +2,8 @@ package textExcel;
 //This class contains client code that uses the spreadsheet class in a user interface program
 //@author Jon Lee
 //@version March 4, 2019
-import java.io.FileNotFoundException;
-import java.util.Scanner;
 
-import textExcel.TestsALL.TestLocation;
+import java.util.Scanner;
 
 public class TextExcel
 {
@@ -29,7 +27,6 @@ public class TextExcel
             sheet.processCommand("B11 = 1.2");
             sheet.processCommand("B12 = 607.2");
             sheet.processCommand("B13 = -0.02");
-         
             System.out.println(sheet.getGridText());
             System.out.println(sheet.processCommand("SoRTd A9-B13"));
     		//System.out.println(sheet.processCommand(input));

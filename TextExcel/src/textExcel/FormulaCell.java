@@ -1,8 +1,9 @@
 package textExcel;
+//This class contains methods that represent a spreadsheet's functionality
+//@author Jon Lee
+//@version March 4, 2019
 
 import java.util.*;
-
-//import fracCalc.Fraction;
 
 public class FormulaCell extends RealCell{
 	private static Spreadsheet sheet;
