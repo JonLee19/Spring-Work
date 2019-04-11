@@ -15,11 +15,23 @@ public class FormulaCell extends RealCell{
 	}
 	
 	public double getDoubleValue() {
-		double answer;
+		double answer = 0;
+		System.out.println("this is the formula: "+super.fullCellText());
 		String formula = super.fullCellText().substring(1,super.fullCellText().length()-1).trim();
-		//store the formula after removing the parentheses and spaces from the edges
+		System.out.println("take off the parentheses "+formula);
+		//removing the parentheses and any spaces from the edges
 		ArrayList<String> splitted = new ArrayList<String>(Arrays.asList(formula.split(" ")));
 		//split on space and store as an array list for added flexibility (changes length)
+		/*if (splitted.size()==1) {
+			ArrayList<String> specialsplitted = splitOperator(splitted.get(0));
+			for (int i = 2; i<specialsplitted.size(); i+=2) {
+				answer = parseOperand(specialsplitted.get(0));
+				answer = doMath(answer, (specialsplitted.get(i-1)), parseOperand(specialsplitted.get(i)));
+	    		//repeat math operations until end of formula string
+	    	}
+			return answer;
+		}
+		*/
 		if (splitted.size()==2) {
 			//reorder the components so that sum or avg is the operator
 			return specialOperation(splitted.get(0), splitted.get(1));
@@ -73,6 +85,7 @@ public class FormulaCell extends RealCell{
 		}
 	}
 	
+	//utility methods
 	public static double sum(SpreadsheetLocation loc1, SpreadsheetLocation loc2) {
 		double answer= 0;
 		for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
@@ -107,8 +120,45 @@ public class FormulaCell extends RealCell{
 			}
 			RealCell c = (RealCell) sheet.getCell(loc);
 			return c.getDoubleValue();
+		}	
+	}
+	
+	//to separate operands when there are no spaces between them
+	public static ArrayList<String> splitOperator(String s) {
+		ArrayList<String> answer = new ArrayList<String>();
+		int lastindex = 0;
+		for (int i = 0; i < s.length(); i++) {
+			if (s.charAt(i)=='+') {
+				answer.add(s.substring(lastindex, i));
+				answer.add("+");
+				lastindex = i+1;
+			}
+			else if (s.charAt(i)=='-') {
+				answer.add(s.substring(lastindex, i));
+				answer.add("-");
+				lastindex = i+1;
+			}
+			else if (s.charAt(i)=='*') {
+				answer.add(s.substring(lastindex, i));
+				answer.add("*");
+				lastindex = i+1;
+			}
+			else if (s.charAt(i)=='/') {
+				answer.add(s.substring(lastindex, i));
+				answer.add("/");
+				lastindex = i+1;
+			}
+			else if (s.charAt(i)=='%') {
+				answer.add(s.substring(lastindex, i));
+				answer.add("%");
+				lastindex = i+1;
+			}
 		}
-		
+		if (lastindex != s.length()) {
+			//the last operand has not been added yet
+			answer.add(s.substring(lastindex, s.length()));
+		}
+		return answer;
 	}
 	
 	//toString

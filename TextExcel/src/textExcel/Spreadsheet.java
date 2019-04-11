@@ -30,19 +30,6 @@ public class Spreadsheet implements Grid {
 		return sheet[0].length;
 	}
 
-	@Override
-	public Cell getCell(Location loc){
-		if (loc.getRow() > getRows()-1) {
-			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
-		}
-		if (loc.getCol() > getCols()-1) {
-			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
-		}
-		//check if that location is within the bounds of this spreadsheet
-		return sheet[loc.getRow()][loc.getCol()];
-	}
-	
-	//alternate getter for utility
 	public Cell getCell(int row, int col){
 		if (row > getRows()-1) {
 			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
@@ -53,34 +40,15 @@ public class Spreadsheet implements Grid {
 		//check if that location is within the bounds of this spreadsheet
 		return sheet[row][col];
 	}
+	
+	//alternate getter for utility
+	@Override
+	public Cell getCell(Location loc){
+		return getCell(loc.getRow(), loc.getCol());
+	}
 
-	public void setCell(Location loc, String value){
-		//sets cell at a specific location to a given value
-		if (loc.getRow() > getRows()-1) {
-			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
-		}
-		if (loc.getCol() > getCols()-1) {
-			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
-		}
-		//check if that location is within the bounds of this spreadsheet
-		sheet[loc.getRow()][loc.getCol()] = makeCell(value);
-	}
-	
-	//alternate setters for utility
-	public void setCell(int row, int col, String value){
-		//sets cell at a specific location to a given value
-		if (row > getRows()-1) {
-			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
-		}
-		if (col > getCols()-1) {
-			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
-		}
-		//check if that location is within the bounds of this spreadsheet
-		sheet[row][col] = makeCell(value);
-	}
-	
 	public void setCell(int row, int col, Cell c){
-		//sets cell at a specific location to a given value
+		//sets a specific location to the given cell
 		if (row > getRows()-1) {
 			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
 		}
@@ -89,6 +57,17 @@ public class Spreadsheet implements Grid {
 		}
 		//check if that location is within the bounds of this spreadsheet
 		sheet[row][col] = c;
+	}
+	
+	//alternate setters for utility
+	public void setCell(int row, int col, String value){
+		//sets a specific location to a given value
+		setCell(row, col, makeCell(value));
+	}
+	
+	public void setCell(Location loc, String value){
+		//sets a specific location to a given value
+		setCell(loc.getRow(), loc.getCol(), makeCell(value));
 	}
 	
 	public Cell[][] getSheet() {
@@ -125,11 +104,11 @@ public class Spreadsheet implements Grid {
 		}
 		if (command.substring(0,4).equalsIgnoreCase("sort")) {
 			if (command.toLowerCase().charAt(4)=='a') {
-				return sorta(command.substring(5));
+				return sorta(command.substring(5).trim());
 				//send in the command with "sorta" cut off
 			}
 			else if (command.toLowerCase().charAt(4)=='d') {
-				return sortd(command.substring(5));
+				return sortd(command.substring(5).trim());
 				//send in the command with "sortd" cut off
 			}
 			else {
@@ -147,9 +126,8 @@ public class Spreadsheet implements Grid {
 			}
 			else {
 				//clears a specific cell
-				command = command.substring(6);
-				//removes the word "clear"
-				//"command" becomes the cell#
+				command = command.substring(5).trim();
+				//removes the word "clear" and "command" becomes the cell#
 			}
 		value = "";
 		//to clear, replace the cell(s) with an empty string
@@ -165,6 +143,13 @@ public class Spreadsheet implements Grid {
 		}
 		SpreadsheetLocation loc = new SpreadsheetLocation(command);
 		//convert "command," or the cell number, to a location
+		if (loc.getRow() > getRows()-1 || loc.getRow() < 0) {
+			return("ERROR: The given row # is outside of the bounds of the spreadsheet");
+		}
+		if (loc.getCol() > getCols()-1 || loc.getCol() < 0) {
+			return("ERROR: The given column # is outside of the bounds of the spreadsheet");
+		}
+		//check if that location is within the bounds of this spreadsheet
 		setCell(loc, value);
 		//replace the cell at the given location with the value provided
 		return getGridText();
@@ -206,27 +191,32 @@ public class Spreadsheet implements Grid {
 	
 	public Cell makeCell(String value) {
 		if (value.length()<1) {
+			System.out.println("making empty cell: "+value);
 			//if the value to input is an empty string, create an EmptyCell (different from just an empty TextCell)
 			return new EmptyCell();
 		}
 		if (value.charAt(value.length()-1)=='%') {
+			System.out.println("making percent cell "+value);
 			//if the string ends in %, make a PercentCell
 			return new PercentCell(value);
 		}
-		if (isNumeric(value)){
+		if (isNumeric(value) && !value.contains("..")){
+			System.out.println("making number cell "+value);
 			//if value is a real number
 			return new ValueCell(value);
 		}
-		if (value.charAt(0)=='\"') {
+		if (value.charAt(0)=='\"' && value.charAt(value.length()-1)=='\"') {
+			System.out.println("making text cell "+value);
 			//if value has quotes it is text
 			return new TextCell(value);
 		}
-		if (value.charAt(0)=='('||value.charAt(value.length()-1)==')') {
+		if (value.charAt(0)=='(' && value.charAt(value.length()-1)==')') {
+			System.out.println("making formula cell "+value);
 			//if value contains parentheses at both ends, it is a formula cell
 			return new FormulaCell(value, this);
 		}
 		else {
-			throw new IllegalArgumentException("ERROR: That is not a valid input.");
+			throw new IllegalArgumentException("ERROR: That is not a valid input. which is "+value);
 		}
 	}
 	
@@ -326,11 +316,22 @@ public class Spreadsheet implements Grid {
 	
 	//taken from online at stackoverflow and modified
 	public static boolean isNumeric(String str){
+		int dotcount = 0;
+		int dashcount = 0;
 	    for (char c : str.toCharArray()){
 	        if (!Character.isDigit(c)&&(c!='.')&&(c!='-')) {
 	        	//if the characters are not digits, decimal points, or negative signs, the string is not numeric
 	        	return false;
 	        }
+	        else if (c=='.') {
+	        	dotcount++;
+	        }
+	        else if (c=='-') {
+	        	dashcount++;
+	        }
+	    }
+	    if (dotcount > 2 || dashcount > 2) {
+	    	return false;
 	    }
 	    return true;
 	}

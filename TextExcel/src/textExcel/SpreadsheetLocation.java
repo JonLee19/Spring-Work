@@ -12,6 +12,9 @@ public class SpreadsheetLocation implements Location {
 	public SpreadsheetLocation(String cellName){
         row = Integer.parseInt(cellName.substring(1, cellName.length()))-1;
         col = cellName.toUpperCase().charAt(0)-65;
+        //if (row < 0 || col < 0) {
+        	//throw new IllegalArgumentException("ERROR: either your row or column is negative, which is not possible");
+        //}
     }
 	
 	@Override

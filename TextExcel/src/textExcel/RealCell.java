@@ -27,7 +27,6 @@ public abstract class RealCell implements Cell, Comparable<Cell> {
 	
 	public abstract double getDoubleValue();
 
-	
 	//@Override
 	//compares to another cell
 	public int compareTo(Cell c) {
