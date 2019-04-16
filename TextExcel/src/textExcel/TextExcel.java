@@ -17,9 +17,9 @@ public class TextExcel
     	//open scanner to take in an expression
     	while (!input.equalsIgnoreCase("quit")) {
     		//repeat the loop until the user enters quit
-    		sheet.processCommand("A1 = ( -43.5 )");
-            System.out.println(sheet.getGridText());
-    		//System.out.println(sheet.processCommand(input));
+    		input = sheet.processCommand("A1 = lesnerize ");
+            //System.out.println(sheet.getGridText());
+    		System.out.println(sheet.processCommand(input));
     		System.out.println("Type \"quit\" to end or new values to try again.");
     		input = console.nextLine().trim();
     	}                                          

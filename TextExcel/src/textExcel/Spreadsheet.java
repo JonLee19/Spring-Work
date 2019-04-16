@@ -19,7 +19,7 @@ public class Spreadsheet implements Grid {
 		clearAll();
 	}
 	
-	//getters and setters
+	//getters and setters (with alternates for utility)
 	@Override
 	public int getRows(){	
 		return sheet.length;
@@ -32,16 +32,15 @@ public class Spreadsheet implements Grid {
 
 	public Cell getCell(int row, int col){
 		if (row > getRows()-1) {
-			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
+			errorExit("ERROR: The given row # is outside of the bounds of the spreadsheet");
 		}
 		if (col > getCols()-1) {
-			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
+			errorExit("ERROR: The given column # is outside of the bounds of the spreadsheet");
 		}
 		//check if that location is within the bounds of this spreadsheet
 		return sheet[row][col];
 	}
 	
-	//alternate getter for utility
 	@Override
 	public Cell getCell(Location loc){
 		return getCell(loc.getRow(), loc.getCol());
@@ -50,16 +49,15 @@ public class Spreadsheet implements Grid {
 	public void setCell(int row, int col, Cell c){
 		//sets a specific location to the given cell
 		if (row > getRows()-1) {
-			throw new IllegalArgumentException("ERROR: The given row # is outside of the bounds of the spreadsheet");
+			errorExit("ERROR: The given row # is outside of the bounds of the spreadsheet");
 		}
 		if (col > getCols()-1) {
-			throw new IllegalArgumentException("ERROR: The given column # is outside of the bounds of the spreadsheet");
+			errorExit("ERROR: The given column # is outside of the bounds of the spreadsheet");
 		}
 		//check if that location is within the bounds of this spreadsheet
 		sheet[row][col] = c;
 	}
 	
-	//alternate setters for utility
 	public void setCell(int row, int col, String value){
 		//sets a specific location to a given value
 		setCell(row, col, makeCell(value));
@@ -90,7 +88,7 @@ public class Spreadsheet implements Grid {
     
     
     
-	//spreadsheet commands (functionality)
+	//spreadsheet functions
 	@Override
 	public String processCommand(String command){
 		//converts input into specific commands, calls those commands, and returns the result
@@ -112,8 +110,7 @@ public class Spreadsheet implements Grid {
 				//send in the command with "sortd" cut off
 			}
 			else {
-				throw new IllegalArgumentException(
-					"ERROR: the sorting method you called is not a valid command");
+				errorExit("ERROR: the sorting method you called is not a valid type of sorting");
 			}
 		}
 		String value = "";
@@ -132,24 +129,13 @@ public class Spreadsheet implements Grid {
 		value = "";
 		//to clear, replace the cell(s) with an empty string
 		}
-		if (command.contains("=")) {
-			//proves it is an assignment statement
+		if (command.contains("=")) { //assignment statement
 			String[] components = command.split("=",2);
-			//split on space to separate the cell#, equals sign, and value respectively
-			command = components[0].trim();
-			//set the cell number to the first component
+			command = components[0].trim(); //the cell#
 			value = components[1].trim();
-			//sets the value to be set in variable "value"
 		}
 		SpreadsheetLocation loc = new SpreadsheetLocation(command);
 		//convert "command," or the cell number, to a location
-		if (loc.getRow() > getRows()-1 || loc.getRow() < 0) {
-			return("ERROR: The given row # is outside of the bounds of the spreadsheet");
-		}
-		if (loc.getCol() > getCols()-1 || loc.getCol() < 0) {
-			return("ERROR: The given column # is outside of the bounds of the spreadsheet");
-		}
-		//check if that location is within the bounds of this spreadsheet
 		setCell(loc, value);
 		//replace the cell at the given location with the value provided
 		return getGridText();
@@ -216,7 +202,8 @@ public class Spreadsheet implements Grid {
 			return new FormulaCell(value, this);
 		}
 		else {
-			throw new IllegalArgumentException("ERROR: That is not a valid input. which is "+value);
+			errorExit("ERROR: "+value+" is not a valid input to store");
+			throw new IllegalArgumentException(); //backup exit if errorExit fails to stop execution
 		}
 	}
 	
@@ -241,7 +228,7 @@ public class Spreadsheet implements Grid {
 			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
 				if (getCell(i, j) instanceof FormulaCell) {
 					//doesn't work with formula cells for now
-					throw new IllegalArgumentException("ERROR: One of the cells you are trying to sort is not a valid type of cell");	
+					errorExit("ERROR: One of the cells you are trying to sort contains a formula, which cannot be sorted");	
 				}
 				storecell.add(getCell(i, j));
 			}
@@ -334,6 +321,11 @@ public class Spreadsheet implements Grid {
 	    	return false;
 	    }
 	    return true;
+	}
+	
+	public static void errorExit(String errorstatement) {
+		System.out.println(errorstatement);
+		System.exit(1);
 	}
 	
 	//not needed but could be useful elsewhere

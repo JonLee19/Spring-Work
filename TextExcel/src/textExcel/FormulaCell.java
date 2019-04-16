@@ -115,8 +115,7 @@ public class FormulaCell extends RealCell{
 			SpreadsheetLocation loc = new SpreadsheetLocation(op);
 			if (!(sheet.getCell(loc) instanceof RealCell)) {
 				//if its not a type of real cell
-				throw new IllegalArgumentException(
-						"The cell you refer to has no numeric value, so the formula cannot be calculated");
+				Spreadsheet.errorExit("ERROR: The cell you refer to has no numeric value, so the formula cannot be calculated");
 			}
 			RealCell c = (RealCell) sheet.getCell(loc);
 			return c.getDoubleValue();
