@@ -17,7 +17,7 @@ public class TextExcel
     	//open scanner to take in an expression
     	while (!input.equalsIgnoreCase("quit")) {
     		//repeat the loop until the user enters quit
-    		input = sheet.processCommand("A1 = lesnerize ");
+    		input = "A1 = 3 ";
             //System.out.println(sheet.getGridText());
     		System.out.println(sheet.processCommand(input));
     		System.out.println("Type \"quit\" to end or new values to try again.");
