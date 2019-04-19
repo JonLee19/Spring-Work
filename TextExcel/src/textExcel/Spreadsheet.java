@@ -33,10 +33,10 @@ public class Spreadsheet implements Grid {
 	public Cell getCell(int row, int col){
 		//check if the location is within the bounds of this spreadsheet
 		if (row > getRows()-1) {
-			errorExit("ERROR: The given row # is outside of the bounds of the spreadsheet");
+			throw new ErrorException("ERROR: The given row # is outside of the bounds of the spreadsheet");
 		}
 		if (col > getCols()-1) {
-			errorExit("ERROR: The given column # is outside of the bounds of the spreadsheet");
+			throw new ErrorException("ERROR: The given column # is outside of the bounds of the spreadsheet");
 		}
 		return sheet[row][col];
 	}
@@ -50,10 +50,10 @@ public class Spreadsheet implements Grid {
 	public void setCell(int row, int col, Cell c){
 		//check if that location is within the bounds of this spreadsheet
 		if (row > getRows()-1) {
-			errorExit("ERROR: The given row # is outside of the bounds of the spreadsheet");
+			throw new ErrorException("ERROR: The given row # is outside of the bounds of the spreadsheet");
 		}
 		if (col > getCols()-1) {
-			errorExit("ERROR: The given column # is outside of the bounds of the spreadsheet");
+			throw new ErrorException("ERROR: The given column # is outside of the bounds of the spreadsheet");
 		}
 		sheet[row][col] = c;
 	}
@@ -95,42 +95,50 @@ public class Spreadsheet implements Grid {
 	@Override
 	//converts input into specific commands, calls those commands, and returns the result
 	public String processCommand(String command){
-		if (command.equals("")) { //return nothing if empty string is inputted
-			return command;
-		}
-		if (command.length()<=3) { //proves it's an inspect-only command
-			SpreadsheetLocation loc = new SpreadsheetLocation(command);
-			return getCell(loc).fullCellText();
-		}
-		if (command.substring(0,4).equalsIgnoreCase("sort")) {
-			if (command.toLowerCase().charAt(4)=='a') { //send in the command with "sorta" cut off
-				return sorta(command.substring(5).trim());	
+		try {
+			if (command.equals("")) { //return nothing if empty string is inputted
+				return command;
 			}
-			else if (command.toLowerCase().charAt(4)=='d') { //send in the command with "sortd" cut off
-				return sortd(command.substring(5).trim());
+			if (command.length()<=3) { //proves it's an inspect-only command
+				SpreadsheetLocation loc = new SpreadsheetLocation(command);
+				return getCell(loc).fullCellText();
 			}
-			else {
-				errorExit("ERROR: the sorting method you called is not a valid type of sorting");
+			if (command.substring(0,4).equalsIgnoreCase("sort")) {
+				if (command.toLowerCase().charAt(4)=='a') { //send in the command with "sorta" cut off
+					return sorta(command.substring(5).trim());	
+				}
+				else if (command.toLowerCase().charAt(4)=='d') { //send in the command with "sortd" cut off
+					return sortd(command.substring(5).trim());
+				}
+				else {
+					throw new ErrorException("ERROR: the sorting method you called is not a valid type of sorting");
+				}
 			}
+			String value = ""; //value to input into the cell
+			if (command.substring(0,5).toLowerCase().contains("clear")) { //to clear, replace the cell(s) with an empty cell
+				if (command.equalsIgnoreCase("clear")) { //clears all cells in the spreadsheet
+					clearAll();
+					return getGridText();
+				}
+				else { //clears a specific cell
+					command = command.substring(5).trim();
+					//removes the word "clear", "command" becomes the cell# and leave value as an empty string
+				}
+			}
+			if (command.contains("=")) { //assignment statement
+				String[] components = command.split("=",2);
+				command = components[0].trim(); //the cell#
+				value = components[1].trim();
+			}
+			SpreadsheetLocation loc = new SpreadsheetLocation(command); //convert "command," or the cell#, to a location
+			setCell(loc, value);
 		}
-		String value = ""; //value to input into the cell
-		if (command.substring(0,5).toLowerCase().contains("clear")) { //to clear, replace the cell(s) with an empty cell
-			if (command.equalsIgnoreCase("clear")) { //clears all cells in the spreadsheet
-				clearAll();
-				return getGridText();
-			}
-			else { //clears a specific cell
-				command = command.substring(5).trim();
-				//removes the word "clear", "command" becomes the cell# and leave value as an empty string
-			}
+		catch (ErrorException e) {
+			return e.getErrorMessage();
 		}
-		if (command.contains("=")) { //assignment statement
-			String[] components = command.split("=",2);
-			command = components[0].trim(); //the cell#
-			value = components[1].trim();
+		catch (NumberFormatException n) {
+			return ("ERROR: The input you entered did not provide a number in the appropriate position");
 		}
-		SpreadsheetLocation loc = new SpreadsheetLocation(command); //convert "command," or the cell#, to a location
-		setCell(loc, value);
 		return getGridText(); 
 	}
 
@@ -166,7 +174,7 @@ public class Spreadsheet implements Grid {
 	}
 	
 	//creates the appropriate type of cell for each input
-	public Cell makeCell(String value) {
+	public Cell makeCell(String value){
 		if (value.length()<1) {
 			//if the value to input is an empty string, create an EmptyCell (different from just an empty TextCell)
 			return new EmptyCell();
@@ -188,8 +196,7 @@ public class Spreadsheet implements Grid {
 			return new FormulaCell(value, this);
 		}
 		else {
-			errorExit("ERROR: "+value+" is not a valid input to store");
-			throw new IllegalArgumentException(); //backup exit if errorExit fails to stop execution
+			throw new ErrorException("ERROR: "+value+" is not a valid input to store");
 		}
 	}
 	
@@ -200,11 +207,10 @@ public class Spreadsheet implements Grid {
 	
 	//sorts a range of cells in descending order
 	public String sortd(String range) {
-		
 		return sortRange(range, true);
 	}
 	
-	public String sortRange(String range, boolean descending) {
+	public String sortRange(String range, boolean descending){
 		//sorts a range of cells in ascending order
 		ArrayList<Cell> storecell = new ArrayList<Cell>();
 		String[] splitted = range.split("-");
@@ -215,7 +221,7 @@ public class Spreadsheet implements Grid {
 			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
 				if (getCell(i, j) instanceof FormulaCell) {
 					//doesn't work with formula cells for now
-					errorExit("ERROR: One of the cells you are trying to sort contains a formula, which cannot be sorted");	
+					throw new ErrorException("ERROR: One of the cells you are trying to sort contains a formula, which cannot be sorted");	
 				}
 				storecell.add(getCell(i, j));
 			}
@@ -309,10 +315,13 @@ public class Spreadsheet implements Grid {
 	    return true;
 	}
 	
-	public static void errorExit(String errorstatement) { //used to exit the program if some input is incorrect
+	//doesn't work
+	/*public static void errorExit(String errorstatement) { //used to exit the program if some input is incorrect
 		System.out.println(errorstatement);
-		System.exit(1); //figure out a way to limit this to just exiting processCommand
+		break testError;
+		//System.exit(1); //figure out a way to limit this to just exiting processCommand
 	}
+	*/
 	
 	//not needed but could be useful elsewhere
 	public static boolean isFormula(String str) {

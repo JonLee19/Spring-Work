@@ -50,7 +50,7 @@ public class FormulaCell extends RealCell{
 		if (operator.equals("/")||operator.equals("*")) {
 			if (operator.equals("/")) {
 				op2=1/op2;
-				//division is multiplaction by the reciprical
+				//division is multipliction by the reciprocal
 			}
 			return (op1*op2);
 		}
@@ -62,7 +62,7 @@ public class FormulaCell extends RealCell{
 			return (op1+op2);
 		}
 		else {
-			throw new IllegalArgumentException("ERROR: Input is in an invalid format.");
+			throw new ErrorException("ERROR: Input is in an invalid format.");
 			//final possible path
 		}
 	}
@@ -115,7 +115,7 @@ public class FormulaCell extends RealCell{
 			SpreadsheetLocation loc = new SpreadsheetLocation(op);
 			if (!(sheet.getCell(loc) instanceof RealCell)) {
 				//if its not a type of real cell
-				Spreadsheet.errorExit("ERROR: The cell you refer to has no numeric value, so the formula cannot be calculated");
+				throw new ErrorException("ERROR: The cell you refer to has no numeric value, so the formula cannot be calculated");
 			}
 			RealCell c = (RealCell) sheet.getCell(loc);
 			return c.getDoubleValue();

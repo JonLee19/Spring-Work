@@ -17,9 +17,16 @@ public class TextExcel
     	//open scanner to take in an expression
     	while (!input.equalsIgnoreCase("quit")) {
     		//repeat the loop until the user enters quit
-    		input = "A1 = 3 ";
+    		sheet.processCommand("A1 = \"hello\"");
+            sheet.processCommand("A37 = 5");
+            sheet.processCommand("M1 = 3");
+            sheet.processCommand("A-5 = 2");
+            sheet.processCommand("A0 = 17");
+            System.out.println(sheet.processCommand("lesnerize"));
+            System.out.println(sheet.getGridText());
+    		//input = "A1 = 3 ";
             //System.out.println(sheet.getGridText());
-    		System.out.println(sheet.processCommand(input));
+    		//System.out.println(sheet.processCommand(input));
     		System.out.println("Type \"quit\" to end or new values to try again.");
     		input = console.nextLine().trim();
     	}                                          

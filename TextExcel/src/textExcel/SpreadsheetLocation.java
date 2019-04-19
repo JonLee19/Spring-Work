@@ -13,10 +13,10 @@ public class SpreadsheetLocation implements Location {
         row = Integer.parseInt(cellName.substring(1, cellName.length()))-1;
         col = cellName.toUpperCase().charAt(0)-65;
         if (row < 0 ) {
-        	Spreadsheet.errorExit("ERROR: the row number is negative");
+        	throw new ErrorException("ERROR: the row number is negative");
         }
         if (col < 0) {
-        	Spreadsheet.errorExit("ERROR: the column number is negative");
+        	throw new ErrorException("ERROR: the column number is negative");
         }
     }
 	
