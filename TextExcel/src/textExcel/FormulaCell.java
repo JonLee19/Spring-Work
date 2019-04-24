@@ -15,38 +15,21 @@ public class FormulaCell extends RealCell{
 	}
 	
 	public double getDoubleValue() {
-		double answer = 0;
-		System.out.println("this is the formula: "+super.fullCellText());
-		String formula = super.fullCellText().substring(1,super.fullCellText().length()-1).trim();
-		System.out.println("take off the parentheses "+formula);
-		//removing the parentheses and any spaces from the edges
-		ArrayList<String> splitted = new ArrayList<String>(Arrays.asList(formula.split(" ")));
-		//split on space and store as an array list for added flexibility (changes length)
-		/*if (splitted.size()==1) {
-			ArrayList<String> specialsplitted = splitOperator(splitted.get(0));
-			for (int i = 2; i<specialsplitted.size(); i+=2) {
-				answer = parseOperand(specialsplitted.get(0));
-				answer = doMath(answer, (specialsplitted.get(i-1)), parseOperand(specialsplitted.get(i)));
-	    		//repeat math operations until end of formula string
-	    	}
-			return answer;
+		String formula = super.fullCellText().substring(1,super.fullCellText().length()-1).trim(); //cuts off parentheses and whitespace
+		if (formula.toLowerCase().contains("avg")||formula.toLowerCase().contains("sum")) { //sum or average operations
+			String[] splitted = formula.split(" ", 2);
+			return specialOperation(splitted[0].trim(), splitted[1].trim());
 		}
-		*/
-		if (splitted.size()==2) {
-			//reorder the components so that sum or avg is the operator
-			return specialOperation(splitted.get(0), splitted.get(1));
-			
-		}
-		answer = parseOperand(splitted.get(0));
-    	for (int i = 2; i<splitted.size(); i+=2) {
+		ArrayList<String> splitted = parseFormula(formula);
+		double answer = parseOperand(splitted.get(0));
+    	for (int i = 2; i<splitted.size(); i+=2) { //repeat math operations until end of formula string
     		answer = doMath(answer, (splitted.get(i-1)), parseOperand(splitted.get(i)));
-    		//repeat math operations until end of formula string
     	}
     	return answer;
 	}
 	
+	//performs elementary functions
 	public double doMath(double op1, String operator, double op2) {
-		//elementary functions
 		if (operator.equals("/")||operator.equals("*")) {
 			if (operator.equals("/")) {
 				op2=1/op2;
@@ -63,7 +46,6 @@ public class FormulaCell extends RealCell{
 		}
 		else {
 			throw new ErrorException("ERROR: Input is in an invalid format.");
-			//final possible path
 		}
 	}
 	
@@ -80,8 +62,7 @@ public class FormulaCell extends RealCell{
 			return sum(loc1, loc2)/count;
 		}
 		else {
-			throw new IllegalArgumentException(
-					"the operation you are attempting to use is unsupported");
+			throw new ErrorException("ERROR: The operation you are attempting to use is unsupported");
 		}
 	}
 	
@@ -99,7 +80,7 @@ public class FormulaCell extends RealCell{
 					answer += ((RealCell) sheet.getCell(i, j)).getDoubleValue();
 				} 
 				else {
-					throw new IllegalArgumentException(
+					throw new ErrorException(
 							"One or more cells you are trying to sum is not a real (numeric) cell");
 				}
 			}
@@ -112,50 +93,56 @@ public class FormulaCell extends RealCell{
 			return Double.parseDouble(op);
 		}
 		else { //a cell#
-			SpreadsheetLocation loc = new SpreadsheetLocation(op);
-			if (!(sheet.getCell(loc) instanceof RealCell)) {
-				//if its not a type of real cell
-				throw new ErrorException("ERROR: The cell you refer to has no numeric value, so the formula cannot be calculated");
+			try {
+				SpreadsheetLocation loc = new SpreadsheetLocation(op);
+				if (!(sheet.getCell(loc) instanceof RealCell)) {
+					//if its not a type of real cell
+					throw new ErrorException("ERROR: The cell you refer to has no numeric value, so the formula cannot be calculated");
+				}
+				RealCell c = (RealCell) sheet.getCell(loc);
+				return c.getDoubleValue();
 			}
-			RealCell c = (RealCell) sheet.getCell(loc);
-			return c.getDoubleValue();
+			catch (NumberFormatException n){
+				throw new ErrorException("ERROR: The given value may not be stored in a cell");
+			}
 		}	
 	}
 	
-	//to separate operands when there are no spaces between them
-	public static ArrayList<String> splitOperator(String s) {
+	//separate operands and operators in order into an arraylist
+	public static ArrayList<String> parseFormula (String s) {
 		ArrayList<String> answer = new ArrayList<String>();
 		int lastindex = 0;
 		for (int i = 0; i < s.length(); i++) {
 			if (s.charAt(i)=='+') {
-				answer.add(s.substring(lastindex, i));
+				answer.add(s.substring(lastindex, i).trim());
 				answer.add("+");
 				lastindex = i+1;
 			}
-			else if (s.charAt(i)=='-') {
-				answer.add(s.substring(lastindex, i));
-				answer.add("-");
-				lastindex = i+1;
-			}
 			else if (s.charAt(i)=='*') {
-				answer.add(s.substring(lastindex, i));
+				answer.add(s.substring(lastindex, i).trim());
 				answer.add("*");
 				lastindex = i+1;
 			}
 			else if (s.charAt(i)=='/') {
-				answer.add(s.substring(lastindex, i));
+				answer.add(s.substring(lastindex, i).trim());
 				answer.add("/");
 				lastindex = i+1;
 			}
 			else if (s.charAt(i)=='%') {
-				answer.add(s.substring(lastindex, i));
+				answer.add(s.substring(lastindex, i).trim());
 				answer.add("%");
 				lastindex = i+1;
 			}
+			else if (s.charAt(i)=='-') { //the dash is a minus, not a negative sign, as long as the following character is not a number
+				if (!(Character.isDigit(s.charAt(i+1)))) {	
+					answer.add(s.substring(lastindex, i).trim());
+					answer.add("-");
+					lastindex = i+1;
+				}
+			}
 		}
-		if (lastindex != s.length()) {
-			//the last operand has not been added yet
-			answer.add(s.substring(lastindex, s.length()));
+		if (lastindex != s.length()) { //the last operand has not been added yet
+			answer.add(s.substring(lastindex, s.length()).trim());
 		}
 		return answer;
 	}

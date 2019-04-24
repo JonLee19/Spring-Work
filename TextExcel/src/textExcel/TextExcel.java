@@ -17,12 +17,14 @@ public class TextExcel
     	//open scanner to take in an expression
     	while (!input.equalsIgnoreCase("quit")) {
     		//repeat the loop until the user enters quit
-    		sheet.processCommand("A1 = \"hello\"");
-            sheet.processCommand("A37 = 5");
-            sheet.processCommand("M1 = 3");
-            sheet.processCommand("A-5 = 2");
-            sheet.processCommand("A0 = 17");
-            System.out.println(sheet.processCommand("lesnerize"));
+    		sheet.processCommand("A1 = 1");
+            String before = sheet.processCommand("A2 = 2");
+            String error1 = sheet.processCommand("A3 = 5 + 2");
+            String error2 = sheet.processCommand("A4 = ( avs A1-A2 )");
+            String error3 = sheet.processCommand("A5 = ( sum A0-A2 )");
+            String error4 = sheet.processCommand("A6 = ( 1 + 2");
+            String error5 = sheet.processCommand("A7 = ( avg A1-B )");
+            String error6 = sheet.processCommand("A8 = M80");
             System.out.println(sheet.getGridText());
     		//input = "A1 = 3 ";
             //System.out.println(sheet.getGridText());

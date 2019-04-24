@@ -11,6 +11,7 @@ public class Spreadsheet implements Grid {
 	
 	//declare fields
 	private Cell[][] sheet;
+	private ArrayList<String> history;
 	
 	//constructor
 	public Spreadsheet() {
@@ -132,14 +133,14 @@ public class Spreadsheet implements Grid {
 			}
 			SpreadsheetLocation loc = new SpreadsheetLocation(command); //convert "command," or the cell#, to a location
 			setCell(loc, value);
+			return getGridTextWithErrors(); 
 		}
 		catch (ErrorException e) {
 			return e.getErrorMessage();
 		}
-		catch (NumberFormatException n) {
-			return ("ERROR: The input you entered did not provide a number in the appropriate position");
+		catch (NumberFormatException n) { //when the cell requested is outside the bounds of the spreadsheet
+			return ("ERROR: The requested cell is outside the bounds of this spreadsheet");
 		}
-		return getGridText(); 
 	}
 
 	@Override
@@ -157,12 +158,46 @@ public class Spreadsheet implements Grid {
 			}
 			answer += (i+1)+repeatchars(' ',3-digits)+"|"; //prints out 1 fewer space to offset two-digit numbers
 			for (int j = 0; j < 12; j++) { //prints the spreadsheet body
-				answer += sheet[i][j].abbreviatedCellText()+"|";
+				boolean error = false;
+				try {
+					answer += sheet[i][j].abbreviatedCellText()+"|";
+				}
+				catch (ErrorException e) {
+					error = true;
+				}
+				catch (NumberFormatException n) { //when the command was invalid
+					error = true;
+				}
+				if (error == true) {
+				answer += (new EmptyCell()).abbreviatedCellText()+"|";
+				}
+				
 			}
 			answer+="\n";
 		}
 		return answer;
 	}
+	
+	//returns the entire spreadsheet as a string
+		public String getGridTextWithErrors(){
+			String answer = repeatchars(' ',3)+"|";
+			for (char i = 'A'; i < 'M'; i++) { //prints header row with letters
+				answer += i+repeatchars(' ',9)+"|";
+			}
+			answer += "\n";
+			int digits = 1; 
+			for (int i = 0; i < 20; i++) { //prints the row numbers
+				if (i+1 == 10) { 
+					digits = 2; //indicates a two-digit row number
+				}
+				answer += (i+1)+repeatchars(' ',3-digits)+"|"; //prints out 1 fewer space to offset two-digit numbers
+				for (int j = 0; j < 12; j++) { //prints the spreadsheet body
+						answer += sheet[i][j].abbreviatedCellText()+"|";
+				}
+				answer+="\n";
+			}
+			return answer;
+		}
 	
 	//replaces all cells in the spreadsheet with empty cells
 	public void clearAll() { 
