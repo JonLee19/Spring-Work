@@ -11,7 +11,8 @@ public class Spreadsheet implements Grid {
 	
 	//declare fields
 	private Cell[][] sheet;
-	private ArrayList<String> history;
+	private int recording = 0;  //# of commands to record
+	private ArrayList<String> history = new ArrayList<String>();
 	
 	//constructor
 	public Spreadsheet() {
@@ -97,6 +98,22 @@ public class Spreadsheet implements Grid {
 	//converts input into specific commands, calls those commands, and returns the result
 	public String processCommand(String command){
 		try {
+			if (command.length() > 7 && command.substring(0,7).equalsIgnoreCase("history")) { //records, edits, and reports command history
+				if (command.toLowerCase().contains("stop")) { //stop recording commands
+					this.recording = 0;
+					this.history.clear();
+					return ""; 	
+				}
+				else { //send in the command with "history" cut off
+					return history(command.substring(7).trim());
+				}
+			}
+			else if (recording > 0) {
+				this.history.add(command);
+				while (this.history.size() > recording) { //cut history down to the requested # of commands
+					this.history.remove(0); //remove commands from the oldest down
+				}
+			}
 			if (command.equals("")) { //return nothing if empty string is inputted
 				return command;
 			}
@@ -104,6 +121,7 @@ public class Spreadsheet implements Grid {
 				SpreadsheetLocation loc = new SpreadsheetLocation(command);
 				return getCell(loc).fullCellText();
 			}
+			
 			if (command.substring(0,4).equalsIgnoreCase("sort")) {
 				if (command.toLowerCase().charAt(4)=='a') { //send in the command with "sorta" cut off
 					return sorta(command.substring(5).trim());	
@@ -179,25 +197,25 @@ public class Spreadsheet implements Grid {
 	}
 	
 	//returns the entire spreadsheet as a string
-		public String getGridTextWithErrors(){
-			String answer = repeatchars(' ',3)+"|";
-			for (char i = 'A'; i < 'M'; i++) { //prints header row with letters
-				answer += i+repeatchars(' ',9)+"|";
-			}
-			answer += "\n";
-			int digits = 1; 
-			for (int i = 0; i < 20; i++) { //prints the row numbers
-				if (i+1 == 10) { 
-					digits = 2; //indicates a two-digit row number
-				}
-				answer += (i+1)+repeatchars(' ',3-digits)+"|"; //prints out 1 fewer space to offset two-digit numbers
-				for (int j = 0; j < 12; j++) { //prints the spreadsheet body
-						answer += sheet[i][j].abbreviatedCellText()+"|";
-				}
-				answer+="\n";
-			}
-			return answer;
+	public String getGridTextWithErrors(){
+		String answer = repeatchars(' ',3)+"|";
+		for (char i = 'A'; i < 'M'; i++) { //prints header row with letters
+			answer += i+repeatchars(' ',9)+"|";
 		}
+		answer += "\n";
+		int digits = 1; 
+		for (int i = 0; i < 20; i++) { //prints the row numbers
+			if (i+1 == 10) { 
+				digits = 2; //indicates a two-digit row number
+			}
+			answer += (i+1)+repeatchars(' ',3-digits)+"|"; //prints out 1 fewer space to offset two-digit numbers
+			for (int j = 0; j < 12; j++) { //prints the spreadsheet body
+					answer += sheet[i][j].abbreviatedCellText()+"|";
+			}
+			answer+="\n";
+		}
+		return answer;
+	}
 	
 	//replaces all cells in the spreadsheet with empty cells
 	public void clearAll() { 
@@ -232,6 +250,43 @@ public class Spreadsheet implements Grid {
 		}
 		else {
 			throw new ErrorException("ERROR: "+value+" is not a valid input to store");
+		}
+	}
+	
+	//edits and reports the command history
+	public String history(String command) {
+		if (command.contains("start")) { //begin recording commands
+			command = command.substring(command.indexOf("start") + 5).trim(); //remove the word "start"
+			int count = Integer.parseInt(""+command.charAt(0)); //the # of commands to count is the next character
+			this.recording = count;
+			return ""; 	
+		}
+		if (command.startsWith("clear")) {
+			int count = Integer.parseInt(command.substring(5).trim());
+			if (count < 0) {
+				throw new ErrorException("ERROR: Cannot clear a negative number of commands");
+			}
+			else if (count > this.history.size()) { //clears entire history if # of commands to clear is greater than the size of the history
+				this.history.clear();
+				return "";
+			}
+			for (int i = 0; i < count; i++) { //clears up to the # of recorded commands
+				this.history.remove(0); //only clears the first element bc next element will shift down to 0 once past one is removed
+			}
+			return "";
+		}
+		else if (command.equalsIgnoreCase("display")) {
+			String answer = "";
+			for (int i = this.history.size()-1; i > 0; i--) { //add each command in reverse order (newest to oldest)
+				answer += this.history.get(i) + "\n";
+			}
+			if (this.history.size()>0) {
+				answer += this.history.get(0);
+			}
+			return answer;
+		}
+		else {
+			throw new ErrorException("ERROR: The history command you requested is not a valid type of command");
 		}
 	}
 	
@@ -349,14 +404,6 @@ public class Spreadsheet implements Grid {
 	    }
 	    return true;
 	}
-	
-	//doesn't work
-	/*public static void errorExit(String errorstatement) { //used to exit the program if some input is incorrect
-		System.out.println(errorstatement);
-		break testError;
-		//System.exit(1); //figure out a way to limit this to just exiting processCommand
-	}
-	*/
 	
 	//not needed but could be useful elsewhere
 	public static boolean isFormula(String str) {
