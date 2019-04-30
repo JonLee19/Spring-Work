@@ -14,15 +14,23 @@ public class FormulaCell extends RealCell{
 		sheet = s;
 	}
 	
-	public double getDoubleValue() {
+	public double getDoubleValue() { //add order of ops parentheses
 		String formula = super.fullCellText().substring(1,super.fullCellText().length()-1).trim(); //cuts off parentheses and whitespace
 		if (formula.toLowerCase().contains("avg")||formula.toLowerCase().contains("sum")) { //sum or average operations
 			String[] splitted = formula.split(" ", 2);
 			return specialOperation(splitted[0].trim(), splitted[1].trim());
 		}
 		ArrayList<String> splitted = parseFormula(formula);
+    	for (int i = 1; i < splitted.size(); i+=2) {
+    		if (splitted.get(i).equals("*")||splitted.get(i).equals("/")) { //perform multiplication/division and return the result to the arraylist
+    			splitted.set(i-1, ""+doMath(parseOperand(splitted.get(i-1)), splitted.get(i), parseOperand(splitted.get(i+1))));
+    			splitted.remove(i+1);
+    			splitted.remove(i);
+    			i-=2;
+    		}
+    	}
 		double answer = parseOperand(splitted.get(0));
-    	for (int i = 2; i<splitted.size(); i+=2) { //repeat math operations until end of formula string
+		for (int i = 2; i<splitted.size(); i+=2) { //repeat math operations until end of formula string
     		answer = doMath(answer, (splitted.get(i-1)), parseOperand(splitted.get(i)));
     	}
     	return answer;
@@ -106,6 +114,14 @@ public class FormulaCell extends RealCell{
 				throw new ErrorException("ERROR: The given value may not be stored in a cell");
 			}
 		}	
+	}
+	
+	public double parseOperand(double op) {
+		return op;
+	}
+	
+	public double parseOperand(int op) {
+		return op;
 	}
 	
 	//separate operands and operators in order into an arraylist
