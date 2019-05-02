@@ -8,29 +8,15 @@ import java.util.Scanner;
 public class TextExcel
 {
 	public static void main(String[] args) {
+		//set up variables
     	Scanner console = new Scanner(System.in);
     	Spreadsheet sheet = new Spreadsheet();
-    	//set up variables
-    	System.out.println("Pleace print a command to run on the spreadsheet");
     	//inform the user what to input
-    	String input = console.nextLine();
+    	System.out.println("Pleace print a command to run on the spreadsheet");
     	//open scanner to take in an expression
+    	String input = console.nextLine();
+    	//repeat the loop until the user enters quit
     	while (!input.equalsIgnoreCase("quit")) {
-    		//repeat the loop until the user enters quit
-    		sheet.processCommand("history start 6");
-    		/*/
-    		System.out.println(sheet.processCommand("A1 = 5"));
-    		System.out.println(sheet.processCommand("A2 = \"Test\""));
-            System.out.println(sheet.processCommand("clear A1"));
-            String error2 = sheet.processCommand("A4 = ( avs A1-A2 )");
-            String error3 = sheet.processCommand("A5 = ( sum A0-A2 )");
-            String error4 = sheet.processCommand("A6 = ( 1 + 2");
-            String error5 = sheet.processCommand("A7 = ( avg A1-B )");
-            String error6 = sheet.processCommand("A8 = M80");
-            System.out.println(sheet.getGridText());
-            */
-    		//input = "A1 = 3 ";
-            //System.out.println(sheet.getGridText());
     		System.out.println(sheet.processCommand(input));
     		System.out.println("Type \"quit\" to end or new values to try again.");
     		input = console.nextLine().trim();

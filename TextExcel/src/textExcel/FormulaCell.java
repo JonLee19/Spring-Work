@@ -8,10 +8,30 @@ import java.util.*;
 public class FormulaCell extends RealCell{
 	private static Spreadsheet sheet;
 	//takes in a copy of spreadsheet in order to access those cells for other use
+	private boolean allInts = true;
 	
 	public FormulaCell(String input, Spreadsheet s) {
 		super(input);
 		sheet = s;
+	}
+	
+	public String abbreviatedCellText() {
+		try {
+			String output = ""+getDoubleValue();
+			/*
+			 * if (allInts == true) {
+			 * output = ""+getIntValue();
+			 * }
+			*/
+			if (output.length() < 10) {
+				return output+Spreadsheet.repeatchars(' ',10-output.length());
+				//makes the result 10 spaces long
+			}
+			return output.substring(0,10); 
+		}
+		catch (FormulaErrorException f) {
+			return f.abbreviatedCellText();
+		}
 	}
 	
 	public double getDoubleValue() { //add order of ops parentheses
@@ -21,8 +41,8 @@ public class FormulaCell extends RealCell{
 			return specialOperation(splitted[0].trim(), splitted[1].trim());
 		}
 		ArrayList<String> splitted = parseFormula(formula);
-    	for (int i = 1; i < splitted.size(); i+=2) {
-    		if (splitted.get(i).equals("*")||splitted.get(i).equals("/")) { //perform multiplication/division and return the result to the arraylist
+    	for (int i = 1; i < splitted.size(); i+=2) { //perform all multiplication/division and insert the result back into formula
+    		if (splitted.get(i).equals("*")||splitted.get(i).equals("/")) { 
     			splitted.set(i-1, ""+doMath(parseOperand(splitted.get(i-1)), splitted.get(i), parseOperand(splitted.get(i+1))));
     			splitted.remove(i+1);
     			splitted.remove(i);
@@ -36,19 +56,26 @@ public class FormulaCell extends RealCell{
     	return answer;
 	}
 	
+	public int getIntValue() {
+		return (int) getDoubleValue();
+	}
+	
 	//performs elementary functions
 	public double doMath(double op1, String operator, double op2) {
 		if (operator.equals("/")||operator.equals("*")) {
 			if (operator.equals("/")) {
-				op2=1/op2;
-				//division is multipliction by the reciprocal
+				if (op2==0) {
+					throw new FormulaErrorException("ERROR: Cannot divide by zero");
+				}
+				else {
+				op2=1/op2; //division is multiplication by the reciprocal
+				}
 			}
 			return (op1*op2);
 		}
 		if (operator.equals("+")||operator.equals("-")) {
 			if (operator.equals("-")) {
-				op2 = -1*op2;
-    			//subtraction is just adding by the negative of the second operand
+				op2 = -1*op2; //subtraction is just adding by the negative of the second operand
     		}
 			return (op1+op2);
 		}
@@ -65,8 +92,7 @@ public class FormulaCell extends RealCell{
 			return sum(loc1, loc2);
 		}
 		else if (operator.equalsIgnoreCase("avg")) {
-			int count = (loc2.getRow()-loc1.getRow()+1)*(loc2.getCol()-loc1.getCol()+1);
-			//how many cells are added up
+			int count = (loc2.getRow()-loc1.getRow()+1)*(loc2.getCol()-loc1.getCol()+1); //# of cells in the range
 			return sum(loc1, loc2)/count;
 		}
 		else {
@@ -80,7 +106,7 @@ public class FormulaCell extends RealCell{
 		for (int i = loc1.getRow(); i <= loc2.getRow(); i++) {
 			for (int j = loc1.getCol(); j <= loc2.getCol(); j++) {
 				Cell cell = sheet.getCell(i, j);
-				if (cell instanceof FormulaCell ) {//&& !(cell == this)
+				if (cell instanceof FormulaCell) {//&& !(cell == this)
 					// to make sure these are not the same cell
 					answer += ((FormulaCell) sheet.getCell(i, j)).getDoubleValue();
 				} 
@@ -88,8 +114,8 @@ public class FormulaCell extends RealCell{
 					answer += ((RealCell) sheet.getCell(i, j)).getDoubleValue();
 				} 
 				else {
-					throw new ErrorException(
-							"One or more cells you are trying to sum is not a real (numeric) cell");
+					throw new FormulaErrorException(
+							"ERROR: One or more cells you are trying to sum is not a numeric cell");
 				}
 			}
 		}
@@ -97,15 +123,25 @@ public class FormulaCell extends RealCell{
 	}
 	
 	public double parseOperand(String op) {
+		try {
+			Integer.parseInt(op);
+		}
+		catch (NumberFormatException n) {
+			allInts = false;
+		}
 		if (Spreadsheet.isNumeric(op)) {
 			return Double.parseDouble(op);
 		}
 		else { //a cell#
 			try {
 				SpreadsheetLocation loc = new SpreadsheetLocation(op);
+				//not working
+				if (sheet.getCell(loc) == this) { //they are the same if both references point to the same position in memory
+					throw new FormulaErrorException("ERROR: Circular reference");
+				}
 				if (!(sheet.getCell(loc) instanceof RealCell)) {
 					//if its not a type of real cell
-					throw new ErrorException("ERROR: The cell you refer to has no numeric value, so the formula cannot be calculated");
+					throw new FormulaErrorException("ERROR: The cell you refer to has no numeric value, so the formula cannot be calculated");
 				}
 				RealCell c = (RealCell) sheet.getCell(loc);
 				return c.getDoubleValue();
@@ -113,10 +149,11 @@ public class FormulaCell extends RealCell{
 			catch (NumberFormatException n){
 				throw new ErrorException("ERROR: The given value may not be stored in a cell");
 			}
-		}	
+		}
 	}
 	
 	public double parseOperand(double op) {
+		allInts = false;
 		return op;
 	}
 	
